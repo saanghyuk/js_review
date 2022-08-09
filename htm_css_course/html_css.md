@@ -1,5 +1,117 @@
 
 
+[선택자 정리](##선택자-정리)
+
+[CSS상속](##CSS상속)
+
+[CSS우선순위](##CSS우선순위)
+
+[CSS 단위](##CSS Unit)
+
+
+
+## CSS Unit
+
+CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크기 뿐만 아니라 `padding`, `margin`, `width` 등 다양한 속성들에 이 단위들을 사용할 수 있습니다.
+
+이 단위들의 차이에 대해 알아봅시다.
+
+- PX
+
+  `px`는 절대적인 값입니다. 다른 요소의 값에 영향을 받지 않는다는 거죠.
+
+  ```css
+  html {
+    font-size: 20px;
+  }
+  
+  .container {
+    padding-top: 40px;
+    background-color: lime;
+  }
+  ```
+
+- rem
+
+  `rem` 은 상대적인 값입니다. 하지만 오직 `<html>` 태그의 `font-size`에만 영향을 받습니다.`2rem`은 `<html>` 태그의 `font-size`의 2배 크기입니다.
+
+  ```css
+  html {
+    font-size: 20px;
+  }
+  
+  .container {
+    padding-top: 2rem; /* html의 font-size * 2 = 40px */
+    background-color: lime;
+  }
+  ```
+
+- em
+
+  `em`도 `rem`과 마찬가지로 상대적인 값입니다. `em`은 자기 자신의 `font-size`를 기준으로 합니다.`2em`은 자기 자신의 `font-size`의 2배 크기입니다. 자기 자신의 `font-size`를 따로 정해주지 않을 경우, 상위 요소에서 상속받은 값을 기준으로 합니다.
+
+  ```css
+  html {
+    font-size: 20px;
+  }
+  
+  .container {
+    /* 자동으로 html의 font-size 20px을 상속받음 */
+    padding-top: 2em; /* 자신의 font-size * 2 = 40px */
+    background-color: lime;
+  }
+  
+  ```
+
+  ```css
+  html {
+    font-size: 20px;
+  }
+  
+  .container {
+    font-size: 40px;
+    padding-top: 2em; /* 자신의 font-size * 2 = 80px */
+    background-color: lime;
+  }
+  
+  ```
+
+- 퍼센트 (%)
+
+  `%` 역시 상대적인 값이겠죠? `%`는 어느 항목에서 쓰이냐에 따라 다른 기준이 적용됩니다. 예를 들어 `font-size`에서 `%`가 쓰일 경우, 상위 요소의 `font-size`에 곱해주는 방식으로 계산합니다.
+
+  ```css
+  .container {
+    font-size: 20px;
+    background-color: lime;
+  }
+  
+  .text {
+    font-size: 180%; /* 상위 요소인 container의 font-size * 1.8 = 36px */
+    background-color: skyblue;
+    margin: 0;
+  }
+  ```
+
+  `%`가 `margin`이나 `padding`의 단위로 사용될 경우, 상위 요소의 `width`를 기준으로 계산됩니다.
+
+  ```css
+  .container {
+    width: 200px;
+    background-color: lime;
+  }
+  
+  .text {
+    padding-left: 30%; /* 상위 요소의 width * 0.3 = 60px */
+  }
+  ```
+
+  재미있는 점은 `margin-top`이나 `padding-bottom` 등 세로(상하) 속성를 조절할 때에도 상위 요소의 `height`가 아닌 `width`를 기준으로 계산된다는 것입니다.
+
+  [참고](https://webdesign.tutsplus.com/ko/tutorials/comprehensive-guide-when-to-use-em-vs-rem--cms-23984)
+
+
+
 #### Font Size
 
 - %로 계산할 때는, 부모 요소의 폰트 크기의 n%라는 의미. 
@@ -374,6 +486,210 @@
     background-position: 100px 200px;
     ```
 
+
+
+## 선택자-정리
+
+- `Class`/ `Id`
+
+  ```css
+  /* 'important'라는 클래스를 갖고 있는 모든 태그 */
+  .important {
+    color: orange;
+  }
+  
+  /* 'favorite'라는 아이디를 갖고 있는 태그 */
+  #favorite {
+    color: blue;
+  }
+  ```
+
+- Children
+
+  ```css
+  /* 'div1' 클래스를 갖고 있는 요소의 자식 중 모든 <i> 태그 */
+  .div1 i {
+    color: orange;
+  }
+  ```
+
+- Direct children
+
+  ```css
+  /* 'div1' 클래스를 갖고 있는 요소의 직속 자식 중 모든 <i> 태그 */
+  .div1 > i {
+    color: orange;
+  }
+  ```
+
+- 복수 선택
+
+  ```css
+  /* 'two' 클래스를 가지고 있는 태그 모두와 'four' 클래스를 가지고 있는 태그 모두 선택 */
+  .two, .four {
+    color: orange;
+  }
+  ```
+
+- 여러 조건
+
+  ```css
+  /* 'outside' 클래스를 갖고 있으면서 'one' 클래스도 갖고 있는 태그 */
+  .outside.one {
+    color: blue;
+  }
+  
+  /* 'inside' 클래스를 갖고 있으면서 'two' 클래스도 갖고 있는 태그 */
+  .inside.two {
+    color: orange;
+  }
+  ```
+
+- Pseudo-class (가상 클래스)
+
+  ```css
+  /* .div1의 자식인 <p> 태그 중 3번째 */
+  .div1 p:nth-child(3) {
+    color: blue;
+  }
+  
+  /* .div1의 자식인 <p> 태그 중 첫 번째 */
+  .div1 p:first-child {
+    color: red;
+  }
+  
+  /* .div1의 자식인 <p> 태그 중 마지막 */
+  .div1 p:last-child {
+    color: green;
+  }
+  
+  /* .div1의 자식 중 마지막 자식이 아닌 <p> 태그 */
+  .div1 p:not(:last-child) {
+    font-size: 150%;
+  }
+  
+  /* .div1의 자식 중 첫 번째 자식이 아닌 <p> 태그 */
+  .div1 p:not(:first-child) {
+    text-decoration: line-through;
+  }
+  ```
+
+  
+
+- 마우스 오버(Hover)
+
+  ```css
+  h1 {
+    color: orange;
+  }
+  
+  /* 마우스가 <h1> 태그에 올라갔을 때 */
+  h1:hover {
+    color: green;
+  }
+  ```
+
+  
+
+## CSS상속
+
+- ```css
+  <div class="div1">
+    <h1>Heading 1</h1>
+    <p>Paragraph bla bla bla</p>
+  </div>
+  ```
+
+  `div1`의 font색을` blue`로 설정하면, 아래 `h1`과 `p`도 파란색 글자가 됨. 
+
+  - 상속되는 속성들
+
+    ```html
+    color
+    font-family
+    font-size
+    font-weight
+    line-height
+    list-style
+    text-align
+    visibility
+    ```
+
+    위에 있는 속성들도 항상 상속되는 건 아닙니다. 대표적인 예로 `<a>` 태그에는 `color` 속성이 상속되지 않습니다. `<a>` 태그가 억지로 상속을 받아오기 위해서는 해당 속성에 `inherit` 값을 쓰면 됩니다!
+
+    ````css
+    .div1 {
+      color: green;
+    }
     
+    .div2 {
+      color: orange;
+    }
+    
+    .div2 a {
+      color: inherit;
+    }
+    ````
+
+## CSS우선순위
+
+- 순서
+
+  - 우선 가장 간단한 겁니다. 완전 똑같은 선택자가 나중에 또 나오면, 이전에 나온 스타일을 덮어쓰게 됩니다.
+
+    ```css
+    h1 {
+      color: blue;
+      text-align: center;
+    }
+    
+    h1 {
+      color: green;
+    }
+    ```
+
+    
+
+- 명시도 (Specificity)
+
+  - 같은 요소를 가리키지만 선택자가 다르다면, '명시도(specificity)'에 따라 우선 순위가 결정됩니다.
+
+    **명시도 계산기**
+
+    명시도 계산 방법을 알려드리겠습니다.
+
+    1. 인라인 스타일이 가장 우선 순위가 높습니다.
+    2. 선택자에 **id**가 많을 수록 우선 순위가 높습니다.
+    3. 선택자에 **class, attribute, pseudo-class**가 많을 수록 우선 순위가 높습니다.
+    4. 그 다음은 그냥 요소(또는 가상 요소)가 많은 순서입니다.
+
+    `<ul>` 태그 안에 `<li>` 태그 안에 `<a id="link">`가 있다고 가정해봅시다. `<ul>`과 `<li>`는 나중에 배울 '리스트' 태그입니다.
+
+    ![specify1](/Users/noelson/Documents/js_review/htm_css_course/image/specify1.png)
+
+    ![specify2](/Users/noelson/Documents/js_review/htm_css_course/image/specify2.png)
+
+    첫 번째 경우에는 일반 요소가 세 개, 가상 클래스가 한 개 있어서 '명시도 점수'가 **13**입니다. 두 번째 경우에는 일반 요소가 두 개, 가상 클래스가 한 개, 그리고 id가 한 개 있어서 **112**점입니다.
+
+    따라서 두 선택자에서 겹치는 스타일이 있는 경우, 두 번째 경우인 `ul li:first-child #link` 선택자의 스타일이 적용되는 거죠!
+
+    ```html
+    <ul>
+      <li><a id="link" href="#">Link 1</a></li>
+      <li><a id="link" href="#">Link 1</a></li>
+      <li><a id="link" href="#">Link 1</a></li>
+      <li><a id="link" href="#">Link 1</a></li>
+    </ul>
+    ```
+
+    ```css
+    ul li:first-child #link {
+      color: green;
+    }
+    
+    ul li:first-child a {
+      color: orange;
+    }
+    ```
 
     
