@@ -1,0 +1,36 @@
+@font-face {
+  font-family: "JUA";
+  src: url("../fonts/BMJUA_otf.otf");
+}
+
+body {
+  font-family: "JUA";
+}
+
+h1 {
+  font-size: 80px;
+  text-align: center;
+}
+.movie {
+  background-color: #eee;
+}
+h3 {
+  margin-top: 100px;
+  border-radius: 20px;
+  padding : 50px
+}
+p {
+  color : #61F968;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: overline;
+}
+div {
+  text-align: center;
+  margin:15px;
+}
+
+
+
+
