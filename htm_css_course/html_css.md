@@ -16,6 +16,8 @@
 
 [포지셔닝(Positioning)](###포지셔닝(Positioning))
 
+[Float](##Float)
+
 ## CSS Unit
 
 CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크기 뿐만 아니라 `padding`, `margin`, `width` 등 다양한 속성들에 이 단위들을 사용할 수 있습니다.
@@ -1087,3 +1089,63 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
   ![positioning](./image/positioning.png)
 
   ![positioning](./image/absolute_positioning.png)
+
+
+
+
+
+## Float
+
+- `float: right`를 하면 해당 요소가 오른쪽으로 붙어서 위로 뜨고, 원래 옆에 붙어있던 애들이 땡겨짐. 
+
+  ![float](./image/float.png)
+
+  `float`는 아래와 같은 것을 구현하기 위해 만든 것. 
+
+  ![float](./image/float2.png)
+
+  Yellow Div에다가 글을 썼는데, 왜 아래처럼 써질까? 옐로 div는 현재 width 100% 상태인데? 
+
+  ![float](./image/float3.png)
+
+  Float는 blue를 공백으로 만들어 준것은 맞다. 실제로, 그 공간이 존재하지 않는 것처럼 다른 요소들이 움직인다. 그러나, **한가지 더 중요한 점은 `inline` 혹은 `inline-block` 요소는 이 공간에 갈 수 없다. 이게 중요하다.** 그래서, 위처럼 나오는 것. 
+
+  아래 경우에도 마찬가지로 , 이미지 float 해놔서, p테그 자체는 이미지가 없는 것처럼 움직이지만, 글은 그 공간에 못들어가서 아래처럼 된 것. 여유를 주려면, 사진에 `margin`을 주면 된다. 
+
+  ![float](./image/float4.png)
+
+  
+
+
+
+- **multiple float**
+
+  파란거 `float:left`로 띄워서, 나머지가 자리를 채움. 그 다음 노란거 `float:right`하면? 
+
+  ![float](./image/float5.png)
+
+  그냥 오른쪽에 붕 뜬다.  
+
+  ![float](./image/float6.png)
+
+  그리고, 주황색은 자리를 채우러 온다. 
+
+  ![float](./image/float7.png)
+
+  그럼 이번에는, 파란색, 노란색을 둘다 `float : right`하면?
+
+  일단, 파란색 오른쪽으로 뜨고 노란, 주황이 자리 채워. 그 다음에 노란색도 Float:right니깐, 붕 떠서 오다가 파란색때매 길이 막혀서 거기서 멈추고, 주황색은 자리 채우러 온다. 
+
+  ![float](./image/float8.png)
+
+- 이제 이 개념을 이용해서 **grid layout**을 만들 수 있다. 공간 채우다가, 더 이상 공간이 없으면, 다음 칸으로 오는 특성을 이용. 
+
+  ![float](./image/float9.png)
+
+- **Clear**
+
+  `clear:left`를 하면, 왼쪽에 떠있는 요소가 없도록 치워주는 역할을 함. 현재 `div2`가 초록색이고, 거기에 `clear:left`를 적용했음. 
+
+  ![float](./image/float10.png)
+
+  그래야 왼쪽에 떠있는 요소가 없잖아. ![float](./image/float11.png)
