@@ -14,7 +14,7 @@
 
 [세로 가운데 정렬](###세로 가운데 정렬)
 
-
+[포지셔닝(Positioning)](###포지셔닝(Positioning))
 
 ## CSS Unit
 
@@ -1055,3 +1055,35 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
 **다른 방식?**
 
 위의 방법들 말고도 세로 가운데 정렬을 하는 다양한 방식들이 있습니다. 포지셔닝을 이용할 수도 있고, 최근에 나온 [flexbox](https://www.w3schools.com/css/css3_flexbox.asp)를 이용할 수도 있습니다. 위의 방식으로는 해결되지 않는 상황들도 있을 수 있기 때문에, 다양한 방식들을 연구하는 걸 추천드립니다!
+
+
+
+
+
+
+
+## 포지셔닝(Positioning)
+
+- **Static** - 기본값
+
+  원래 있을 곳에 있는 곳
+
+- **Relative** - 상대적인. top:30px 이라고 하면, 원래 있을 곳에서 이동해서 위에 30px의 공간을 주겠다는 것. 
+
+  `left: 50px` 까지 하면, 왼쪽에도 50px을 주는 것. 
+
+  margin을 했으면, 다른애들까지 같이 움직이는데, relative하면, 진짜 얘만 원래 있었던 곳 기준으로 움직임. 
+
+- **Fixed**
+
+  relative는 요소의 원래 위치 기준. Fixed는 브라우저 기준 Positioning. 
+
+  또한, relative에서는 움직이면서, 원래 공간이 비었는데, fixed를 하면, 원래 흐름에서 아예 빠져버리는 것. 
+
+  ![fixed](./image/fixed.png)
+
+- **Absolute** - 가장 가까운 **Positioning**이 된 조상요소 기준. 
+
+  ![positioning](./image/positioning.png)
+
+  ![positioning](./image/absolute_positioning.png)
