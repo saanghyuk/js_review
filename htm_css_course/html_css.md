@@ -8,6 +8,12 @@
 
 [CSS 단위](##CSS Unit)
 
+[Display](##Display)
+
+[Vertical Align](###vertical-align )
+
+[세로 가운데 정렬](###세로 가운데 정렬)
+
 
 
 ## CSS Unit
@@ -693,3 +699,359 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
     ```
 
     
+
+
+
+
+
+## Display
+
+- display의 종류
+
+  모든 요소는 기본적으로 정해진 display 값이 있는데요. CSS를 통해서 이를 바꿀 수 있습니다!
+
+  ```css
+  i {
+    display: block; /* <i> 태그를 block으로 바꾸기 */
+    background-color: green;
+  }
+  ```
+
+  모든 요소는 딱 한 개의 display 값을 갖고 있습니다. 가질 수 있는 display의 종류는
+
+  - **`inline`** : inline은 width, height를 설정할 수 없다. 그런 개념이 없고, 내부 내용물에 따라서 정해지는 것. 
+
+    inline 요소들은 다른 요소들과 같은 줄에 머무르려고 하는 성향과, 필요한 만큼의 가로 길이만 차지하는 성향이 있습니다.
+
+    다음 요소들은 기본 `display` 값이 `inline`입니다.
+
+    1. `<span>`
+    2. `<a>`
+    3. `<b>`
+    4. `<i>`
+    5. `<img>`
+    6. `<button>`
+
+  - **`block`** : block은 항상 100%를 차지하는 것은 아니고, 따로 설정이 가능하다. 
+
+    block 요소들은 다른 요소들과 독단적인 줄에 가려고 하는 성향과, 최대한 많은 가로 길이를 차지하는 성향이 있습니다.
+
+    다음 요소들은 기본 `display` 값이 `block`입니다.
+
+    1. `<div>`
+    2. `<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`
+    3. `<p>`
+    4. `<nav>`
+    5. `<ul>`
+    6. `<li>`
+
+  - `inline-block`: **inline처럼, 같은 줄에 머물면서 가로-세로 길이를 지정할 수는 없을까?** 그게 이 방법. 
+
+    Block 요소에게는 가로 길이와 세로 길이를 직접 설정해줄 수 있지만, inline 요소는 자동으로 설정이 됩니다. Inline 요소에게는 가로, 세로 길이의 개념이 딱히 없는 셈이죠.
+
+    만약 inline 요소처럼 다른 요소들과 같은 줄에 머무르면서 block 요소처럼 가로, 세로 길이도 설정해주고 싶으면 어떻게 해야 할까요? 바로 그 둘을 섞어놓은 `inline-block`을 사용하면 됩니다!
+
+    ```css
+    i {
+      display: inline-block;
+      width: 200px;
+      height: 200px;
+      background-color: green;
+    }
+    ```
+
+    inline, inline-block은 텍스트처럼 다룰 수 있음. 엄청 큰 글자라고 생각하고 스타일링이 가능함. ex) `text-align`
+
+    
+
+  - `flex`
+
+  - `list-item`
+
+  - `none`
+
+  등 여러 가지가 있는데, 대부분의 요소들은 `inline`과 `block` 중 한 가지입니다.
+
+  
+
+
+
+### 다양한 링크
+
+- a태그로 바꾸면 됨. 
+
+
+
+## Baseline 
+
+- 기본적으로 텍스트는 baseline에 맞춰져 있다. 
+
+  ![baseline](/Users/noelson/Documents/js_review/htm_css_course/image/baseline.png)
+
+​		텍스트의 베이스라인끼리 맞춰져 있다. ![baseline2](/Users/noelson/Documents/js_review/htm_css_course/image/baseline2.png)
+
+​		이미지는 밑부분이 베이스라인 이라서, 그 두 베이스라인이 맞춰져 있다. 
+
+​		아래 경우를 보자.  **Inline block**인데, 그 가장 **마지막 요소**의 베이스라인과 **alex**의 베이스라인이 맞춰져 있는 상태. ![baseline](/Users/noelson/Documents/js_review/htm_css_course/image/baseline3.png)![baseline](./image/baseline4.png)
+
+예외도 있음. 
+
+1. 위 html에서 중간에 글씨 h1, h2를 지웠음. 그러니깐, inline block의 맨 밑이 baseline으로 설정된다. 거기와 alex의 베이스라인이 맞춰진 것. 
+
+   ![baseline5](./image/baseline5.png)
+
+2. 이번에는 inline block의 세로 길이를 작게 줄였음. 박스는 작아졌지만, alex와 chris가 맞춰짐. 
+
+   ![baseline5](./image/baseline6.png)
+
+   그런데, 이 ben, chris박스를 `Overflow:scroll` 해놓으면? hidden인 경우도 마찬가지로, 박스의 하단이 베이스라인으로 설정된다. 
+
+   ![baseline5](./image/baseline7.png)
+
+
+
+
+
+### vertical-align : 부모요소의 x의 가운데에 맞춰진다. 
+
+-  아래 세가지 각각 서로 다른 span에 들어 있고, 제각각 마음대로 배치되어있는 것처럼 보임. 그러나, 각 베이스라인이 맞춰져 있는 것. 이게 바로, `vertical-align`속성이 `baseline`으로 기본값으로 맞춰져 있기 때문. ![vertical_align1](./image/vertical_align1.png)
+
+- 특정 엘리먼트의 vertical-align을 top으로 하면, 해당 요소의 가장 윗부분이 형제들 중 제일 높은 쪽으로 맞춰짐.  
+
+  ![vertical_align1](./image/vertical_align2.png)
+
+- alex에 `vertical-align : top`으로 하면? 
+
+  alex박스의 윗부분이 알렉스 제외한 가장 높은 요소의 탑에 맞춰지는 것. 현재 알렉스 제외하고, 가장 높은 애는 Chris.  
+
+  ![vertical_align1](./image/vertical_align3.png)
+
+  그 두개를 맞추려다 보니, chris의 윗부분이 올라와서 alex의 위가 됨. 
+
+  ![vertical_align1](./image/vertical_align4.png)
+
+  근데 현재, x, ben, chris는 `vertical align`을 설정해주지 않았음. 
+
+  그래서, x와 ben은 chris의 baseline에 맞추기 위해서 위로 같이 올라옴. 
+
+  ![vertical_align1](./image/vertical_align5.png)
+
+  근데 직관적으로, 알렉스의 위가 크리스의 베이스라인이랑 맞춰지려면, alex가 내려와도 되잖아. 근데 그러면, 세로의 길이가 늘어나버림. 
+
+  ![vertical_align1](./image/vertical_align6.png)
+
+  즉, 베이스라인은 
+
+  **`baseline은 vertical-align의 조건들을 충족시키면서 줄의 높이를 최소화시키는 곳에 위치한다.`**
+
+
+
+- 이번에는 ben한테, `vertical-align: middle`을 했음. 정말 ben이 아주 살짝 밑으로 내려간 상태가 되었음. 
+
+  부모테그의 가운데와, ben의 가운데가 맞춰진 것. 
+
+  ![vertical_align1](./image/vertical_align7.png)
+
+  ![vertical_align1](./image/vertical_align8.png)
+
+  Chris에 vertical-align : middle 해도 마찬가지. Alex는 따로 설정을 안했기때문에, 부모테그의 x와  baseline이 맞춰져 있는 것. 
+
+  ![vertical_align1](./image/vertical_align9.png)
+
+  Alex에도 `vertical-align : middle` 먹였더니, 이제 x를 기준으로 다 가운데로 맞춰짐. 위에서, 맞추려다보니, height 늘어났던 것도 줄어듬. 
+
+  ![vertical_align1](./image/vertical_align10.png)
+
+
+
+### 세로 가운데 정렬
+
+**가로 가운데 정렬**
+
+세로 가운데 정렬을 알아보기 전에, 간단하게 가로 가운데 정렬을 알아봅시다.   어떤 요소를 가로로 가운데 정렬하려면 어떻게 해야 할까요? 간단합니다.
+
+**inline 요소**
+
+`inline` 또는 `inline-block` 요소면 부모 태그에 `text-align: center;`를 써주면 됩니다.
+
+**block 요소**
+
+`block` 요소면 `margin-left: auto;`, `margin-right: auto;`를 써주면 되죠?
+
+
+
+**세로 가운데 정렬**
+
+그렇다면 세로로 가운데 정렬하려면 어떻게 해야 할까요? 저도 이것 때문에 짜증난 적이 많은데요! 사실 CSS에서 모든 걸 한 번에 딱 가운데 정렬을 시키는 방법이 없기 때문에, 저희가 지금까지 배운 다양한 지식을 섞어서 해야 합니다.
+
+몇 가지 방법을 봅시다.
+
+**가짜 요소 더하기**
+
+`vertical-align: middle;`을 하면 해결될까요? 우선 `vertical-align` 속성은 인라인 또는 인라인 블록 요소에 적용되기 때문에 `.info`를 인라인 블록으로 바꾸겠습니다. 그리고 `vertical-align: middle;`을 설정해주면...?
+
+```css
+// HTML
+
+<div class="container">
+  x
+  <div class="info">
+    <h1>Hello!</h1>
+    <p>My name is young.</p>
+  </div>
+</div>
+
+
+// CSS
+.container {
+  width: 300px;
+  height: 400px;
+  background-color: gray;
+  text-align: center;
+}
+
+.info {
+  background-color: lime;
+  display: inline-block;
+  vertical-align: middle;
+}
+```
+
+![vertical_align1](./image/vertical_align11.png)
+
+`.info` 요소를 완전 가운데로 오게 하려면 우선 소문자 'x'가 가운데로 와야 합니다. 방법이 하나 있습니다. 세로 길이가 `100%`인 요소를 만들고, 그 요소에도 `vertical-align: middle;`을 하는 거죠!
+
+```
+<div class="container">
+  x
+  <div class="helper"></div>
+  <div class="info">
+    <h1>Hello!</h1>
+    <p>My name is young.</p>
+  </div>
+</div>
+
+
+.container {
+  width: 300px;
+  height: 400px;
+  background-color: gray;
+  text-align: center;
+}
+
+.helper {
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  
+  /* 설명을 위해서 */
+  width: 10px;
+  background-color: red;
+}
+
+.info {
+  background-color: lime;
+  display: inline-block;
+  vertical-align: middle;
+}
+```
+
+![vertical_align1](./image/vertical_align12.png)
+
+이제 거의 다 되었습니다. 여기서 소문자 'x'를 지우고, `.helper` 요소의 가로 길이를 없애면 되겠죠?
+
+```
+<div class="container">
+  <div class="helper"></div>
+  <div class="info">
+    <h1>Hello!</h1>
+    <p>My name is young.</p>
+  </div>
+</div>
+
+
+.container {
+  width: 300px;
+  height: 400px;
+  background-color: gray;
+  text-align: center;
+}
+
+.helper {
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+}
+
+.info {
+  background-color: lime;
+  display: inline-block;
+  vertical-align: middle;
+}
+```
+
+근데 아직도 문제가 조금 있습니다. `.info`의 가로 길이가 `100%`라면 어떻게 되는지 봅시다.
+
+![vertical_align1](./image/vertical_align13.png)
+
+갑자기 이상한 곳에 위치되네요. 사실 `.helper` 와 `.info` 요소 사이에 띄어쓰기가 한 칸 있어서, 가로 길이 `100%`인 `.info` 요소는 자리 부족으로 다음 줄로 가버립니다!
+
+이 문제를 해결하기 위해서는 두 가지 방법이 있습니다.
+
+우선 **띄어쓰기를 없애는 방법:**
+
+```
+<div class="container">
+  <!-- 스페이스 없애기 -->
+  <div class="helper"></div><div class="info">
+    <h1>Hello!</h1>
+    <p>My name is young.</p>
+  </div>
+</div>
+
+```
+
+**띄어쓰기 공간 만큼의 마이너스 여백을 주는 방법:**
+
+```css
+.info {
+  background-color: lime;
+  display: inline-block;
+  vertical-align: middle;
+  width: 100%;
+
+  /* 이 경우 띄어쓰기는 5~7px 정도였습니다! */
+  margin-left: -7px;
+}
+```
+
+**주의 사항:**
+
+어떤 요소에 `height: 100%;`를 설정하기 위해서는 부모의 `height`가 설정되어 있어야 합니다. 위 경우에는 `.helper`의 부모인 `.container`에 `height`가 설정되어 있었기 때문에 가능했던 것이죠.
+
+**`line-height`로 해결**
+
+`.info`를 인라인 블록으로 설정해주면, `line-height` 속성을 활용해볼 수도 있습니다. 부모인 `.container`에 `height`와 동일한 `line-height`를 줘보세요.
+
+`line-height` 속성은 자식들에게 상속되기 때문에 `.info`에는 `line-height: normal;`을 꼭 써주셔야 합니다!
+
+```css
+.container {
+  width: 300px;
+  height: 400px;
+  background-color: gray;
+  text-align: center;
+  line-height: 400px;
+}
+
+.info {
+  background-color: lime;
+  display: inline-block;
+  line-height: normal;
+  vertical-align: middle;
+}
+```
+
+**다른 방식?**
+
+위의 방법들 말고도 세로 가운데 정렬을 하는 다양한 방식들이 있습니다. 포지셔닝을 이용할 수도 있고, 최근에 나온 [flexbox](https://www.w3schools.com/css/css3_flexbox.asp)를 이용할 수도 있습니다. 위의 방식으로는 해결되지 않는 상황들도 있을 수 있기 때문에, 다양한 방식들을 연구하는 걸 추천드립니다!
