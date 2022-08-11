@@ -18,6 +18,8 @@
 
 [Float](##Float)
 
+[List](###List)
+
 ## CSS Unit
 
 CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크기 뿐만 아니라 `padding`, `margin`, `width` 등 다양한 속성들에 이 단위들을 사용할 수 있습니다.
@@ -203,11 +205,7 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
 
   최대 500px라는 뜻. 
 
-
-
 - 요소를 가운데 정렬하고 싶으면 왼쪽과 오른쪽 `margin` 값을 `auto`로 설정해줘야 합니다. `auto`는 말 그대로 '자동으로 계산'하라는 뜻인데요. 왼쪽과 오른쪽을 `auto`로 설정하면 자동으로 왼쪽과 오른쪽을 똑같이 함으로써 요소는 가운데 정렬이 됩니다.
-
-
 
 - overflow
 
@@ -923,7 +921,7 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
 
 `.info` 요소를 완전 가운데로 오게 하려면 우선 소문자 'x'가 가운데로 와야 합니다. 방법이 하나 있습니다. 세로 길이가 `100%`인 요소를 만들고, 그 요소에도 `vertical-align: middle;`을 하는 거죠!
 
-```
+```css
 <div class="container">
   x
   <div class="helper"></div>
@@ -962,7 +960,7 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
 
 이제 거의 다 되었습니다. 여기서 소문자 'x'를 지우고, `.helper` 요소의 가로 길이를 없애면 되겠죠?
 
-```
+```css
 <div class="container">
   <div class="helper"></div>
   <div class="info">
@@ -1149,3 +1147,14 @@ CSS에는 `px`, `rem`, `em`, `%` 등 여러 단위가 있습니다. 폰트 크�
   ![float](./image/float10.png)
 
   그래야 왼쪽에 떠있는 요소가 없잖아. ![float](./image/float11.png)
+
+
+
+
+
+### List
+
+- `<o>` ordered list
+  - `<ol type="a">`, `<ol type="A">`, `<ol type="1">`
+- `<ul>` unordered list
+- `list-style-type`, `list-style: none`, 등 특수하게 사용할 수 있는 속성들이 있다. 
