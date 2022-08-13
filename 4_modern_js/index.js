@@ -1,7 +1,12 @@
-{
-  function sayHi() {
-    console.log('Hi!');
-  }
+
+
+
+const printThis = () => {
+  console.log(this);
 }
 
-sayHi();
+const myObj = {
+  content: 'myObj',
+  printThis: printThis
+}
+

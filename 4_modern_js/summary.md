@@ -122,6 +122,182 @@ console.log(language); // ReferenceError
 
 
 
+# 함수 선언
+
+자바스크립트에서 함수는 다양한 방식으로 선언할 수 있습니다. 가장 일반적인 방법은 `function` 키워드를 통해 함수를 선언하는 방식인데요.
+
+```js
+// 함수 선언
+function sayHi() {
+  console.log('Hi!');
+}
+```
+
+이렇게 작성하는 방식을 함수 선언(function declaration)이라고 합니다.
+
+# 함수 표현식
+
+그리고 자바스크립트에서 함수는 값으로 취급될 수도 있기 때문에 변수에 할당해서 함수를 선언할 수도 있습니다.
+
+```jsx
+// 함수 표현식
+const sayHi = function () {
+  console.log('Hi!');
+};
+```
+
+이렇게 함수를 값으로 다루는 방식을 함수 표현식 (function expression)이라고 합니다.
+
+# 다양한 함수의 형태
+
+자바스크립트에서 함수는 값으로 취급되는데요. 이런 특징은 코드를 작성할 때 다양한 형태로 활용될 수 있습니다.
+
+```js
+// 변수에 할당해서 활용
+const printJS = function () {
+  console.log('JavaScript');
+};
+
+// 객체의 메소드로 활용
+const codeit = {
+  printTitle: function () {
+    console.log('Codeit');
+  }
+}
+
+// 콜백 함수로 활용
+myBtn.addEventListener('click', function () {
+  console.log('button is clicked!');
+});
+
+// 고차 함수로 활용
+function myFunction() {
+  return function () {
+    console.log('Hi!?');
+  };
+};
+```
+
+# 파라미터의 기본값
+
+자바스립트에서 함수의 파라미터는 기본값을 가질 수가 있는데요. 기본값이 있는 파라미터는 함수를 호출할 때 아규먼트를 전달하지 않으면, 함수 내부의 동작은 이 파라미터의 기본값을 가지고 동작하게 됩니다.
+
+```js
+function sayHi(name = 'Codeit') {
+  console.log(`Hi! ${name}`);
+}
+
+sayHi('JavaScript'); // Hi! JavaScript
+sayHi(); // Hi! Codeit
+```
+
+# arguments 객체
+
+자바스크립트 함수 안에는 `arguments`라는 독특한 객체가 존재합니다. `arguments` 객체는 함수를 호출할 때 전달한 아규먼트들을 배열의 형태로 모아둔 유사 배열 객체인데요. 특히, 함수를 호출할 때 전달되는 아규먼트의 개수가 불규칙적일 때 유용하게 활용될 수 있습니다.
+
+```js
+function printArguments() {
+  // arguments 객체의 요소들을 하나씩 출력
+  for (const arg of arguments) {
+    console.log(arg); 
+  }
+}
+
+printArguments('Young', 'Mark', 'Koby');
+```
+
+참고로 `arguments`라는 객체를 활용하고자 한다면 함수 안에서 사용할 파라미터나 변수, 함수의 이름을 `arguments`라고 짓는 것은 피하는게 좋겠죠?
+
+# Rest Parameter
+
+`arguments` 객체를 이용하는 것 말고도 불규칙적으로 전달되는 아규먼트를 다루는 방법이 있는데요. 파라미터 앞에 마침표 세 개를 붙여주면, 여러 개로 전달되는 아규먼트들을 배열로 다룰 수가 있게 됩니다. 그리고 `arguments`객체는 유사 배열이기 때문에 배열의 메소드를 활용할 수 없는 반면, rest parameter는 배열이기 때문에 배열의 메소드를 자유롭게 사용할 수 있다는 장점이 있습니다.
+
+```js
+function printArguments(...args) {
+  // args 객체의 요소들을 하나씩 출력
+  for (const arg of args) {
+    console.log(arg); 
+  }
+}
+
+printArguments('Young', 'Mark', 'Koby');
+```
+
+rest parameter는 다른 일반 파라미터들과 함께 사용될 수도 있는데요.
+
+```js
+function printRankingList(first, second, ...others) {
+  console.log('코드잇 레이스 최종 결과');
+  console.log(`우승: ${first}`);
+  console.log(`준우승: ${second}`);
+  for (const arg of others) {
+    console.log(`참가자: ${arg}`);
+  }
+}
+
+printRankingList('Tommy', 'Jerry', 'Suri', 'Sunny', 'Jack');
+```
+
+이름 그대로 앞에 정의된 이름 그대로 앞에 정의된 파라미터에 argument를 먼저 할당하고 나머지 argument를 배열로 묶는 역할을 하기 때문에 일반 파라미터와 함께 사용할 때는 반드시 가장 마지막에 작성해야 한다는 점을 꼭 기억해 주세요!
+
+# Arrow Function
+
+arrow function은 익명 함수를 좀 더 간결하게 표현할 수 있도록 ES2015에서 새롭게 등장한 함수 선언 방식입니다. 아래 코드와 같이 표현식으로 함수를 정의할 때 활용될 수도 있고 콜백 함수로 전달할 때 활용할 수도 있습니다.
+
+```js
+// 화살표 함수 정의
+const getTwice = (number) => {
+  return number * 2;
+};
+
+// 콜백 함수로 활용
+myBtn.addEventListener('click', () => {
+  console.log('button is clicked!');
+});
+```
+
+화살표 함수는 다양한 상황에 따라 축약형으로 작성될 수 있는데요. 아래 코드와 주석을 한 번 참고해 주세요!
+
+```js
+// 1. 함수의 파라미터가 하나 뿐일 때
+const getTwice = (number) => {
+  return number * 2;
+};
+
+// 파라미터를 감싸는 소괄호 생략 가능
+const getTwice = number => {
+  return number * 2;
+};
+
+// 2. 함수 동작 부분이 return문만 있을 때
+const sum = (a, b) => {
+  return a + b;
+};
+
+// return문과 중괄호 생략 가능
+const sum = (a, b) => a + b;
+```
+
+그리고 Arrow function이 일반 함수와 몇 가지 차이점이 있는데요. 가장 대표적인 차이점은 **arguments 객체가 없고, this가 가리키는 값이 일반 함수와 다르다**는 점입니다. arrow function을 사용할 땐 이런 부분을 잘 고려해야 된다는 점을 잊지 마세요!
+
+# this
+
+자바스크립트에는 this라는 조금 특별한 키워드가 있습니다. 웹 브라우저에서 this가 사용될 때는 전역 객체, Window 객체를 가지게 됩니다. 하지만 객체의 메소드를 정의하기 위한 함수 안에선 **메소드를 호출한 객체**를 가리키게 됩니다.
+
+```js
+const user = {
+  firstName: 'Tess',
+  lastName: 'Jang',
+  getFullName: function () {
+    return `${this.firstName} ${this.lastName}`;
+  },
+};
+
+console.log(user.getFullName()); // getFullName 안에서의 this는 getFullName을 호출한 user객체가 담긴다!
+```
+
+
+
 
 
 #### 1. 공식 문서
@@ -773,3 +949,282 @@ const greetingMessage = (function () {
 이렇게 **함수의 리턴값을 바로 변수에 할당하고 싶을 때** 활용할 수 있습니다.
 
 그리고, 전역변수와 지역변수의 개념 알고 계시죠? 즉시 실행 함수에서 사용하는 변수들은 함수 내에서만 유효하기 때문에 이런 점을 활용하면, 일시적으로 사용할 변수의 이름들을 조금 자유롭게 작성할 수도 있다는 점. 잘 기억해 두세요! :)
+
+
+
+
+
+#### 값으로서의 함수(First Class Function)
+
+**함수를 출력을 해보면**, `console.dir(printJS)` 여러개의 프로퍼티를 가지는 객체의 모습을 하고 있다. 
+
+![function](./images/function.png)
+
+그래서, 객체나 배열의 요소로도 함수가 들어갈 수 있는 것. 심지어 다른 함수의 파라미터로 전달 할 수 있는 것. addEventListner에서 했던 것이 이것. 참고로 다른 함수의 파라미터로 전달된 함수를 **콜백함수**라고 부른다. 
+
+반대로, 어떤 함수의 리턴값이 함수가 될 수 있다는 것. 이런 것은 고차함수라고 부른다. 
+
+
+
+
+
+#### 파라미터
+
+```javascript
+function greeting(name) {
+	console.log(`Hi! My name is ${name}!`)
+}
+
+greeting('Javascript') 
+```
+
+정확히는 위 Javascript처럼 전달하는 문자는 `Argument`라고 한다. 
+
+```javascript
+greeting()
+
+이렇게 아무것도 전달하지 않는다면, Undefined가 된다. 
+
+function greeting(name="기본값") {
+	console.log(`Hi! My name is ${name}!`)
+}
+
+기본값을 줄 수 있다. 또한, Undefined를 전달해도 default 값이 사용된다. 
+```
+
+```javascript
+신기한 건, 
+function defaultTest(x, y=x+3){
+ console.log(x)
+ console.log(y)
+}
+```
+
+```
+function introduce(name = '홍길동', birth = 1443) {
+  console.log(`안녕하세요 저는 ${name}입니다.`);
+  console.log(`${birth}년에 태어났습니다.`);
+}
+
+introduce('장동건'); // 장동건, 1443
+introduce('Joy', null);  // Joy, null 
+introduce(undefined, 2090); // 홍길동, 2090
+
+```
+
+
+
+#### Argument
+
+```java
+
+
+function printArgument(a, b, c){
+  console.log(a)
+  console.log(b)
+  console.log(c)
+}
+
+printArgument('a', 'b', 'c')
+printArgument('a') // Undefined B, C
+printArgument('a', 'b') // Undefined C
+printArgument('a', 'b', 'c', 'd') // D will be ignored
+```
+
+Argument를 유연하게 사용할 수는 없을까? 파라미터와 `arguments`를 사용하니깐 상관없이 전달된 요소들을 다 []안에 출력해 준다. This is 유사배열. 그래도, 갯수 확인, 인덱싱, for 등을 통해 사용이 가능하다. 
+
+![arguments](./images/arguments.png)
+
+```javascript
+function firstWords() {
+  let word = '';
+  for (let arg of arguments){
+    console.log(arg)
+    
+  }
+  
+  // 여기에 코드를 작성해 주세요.
+
+  console.log(word);
+}
+
+firstWords('나만', '없어', '고양이');
+firstWords('아니', '바나나말고', '라면먹어');
+firstWords('만두', '반으로', '잘라먹네', '부지런하다');
+firstWords('결국', '자바스크립트가', '해피한', '지름길');
+firstWords('빨간색', '주황색', '노란색', '초록색', '파란색', '남색', '보라색');
+```
+
+
+
+#### Rest parameter
+
+```js
+rest parameter는 배열이라서, 배열의 메서드를 사용할 수 있다. 
+
+// Rest parameter 
+function printArgument(...args){
+  for (const arg of args){
+    console.log(arg);
+  }
+  console.log("-----------")
+}
+
+printArgument('나만', '없어', '고양이');
+printArgument('아니', '바나나말고', '라면먹어');
+printArgument('만두', '반으로', '잘라먹네', '부지런하다');
+printArgument('결국', '자바스크립트가', '해피한', '지름길');
+printArgument('빨간색', '주황색', '노란색', '초록색', '파란색', '남색', '보라색');
+```
+
+또한, 일반 파라미터와 같이 사용이 가능하다. 
+
+```js
+앞 두개를 argument로 사용하고 나머지를 묶는다. 
+function printArgument(first, second, ...args){
+  for (const arg of args){
+    console.log(arg);
+
+  }
+  console.log("-----------")
+}
+```
+
+
+
+#### Arrow Function 
+
+간단하다, function 키워드 지워주고 화살표를 쓰면 됨. 
+
+```js
+
+const getTwice = function(number){
+  return number*2
+}
+
+const getTwice = (number) => {
+  return number*2
+}
+```
+
+```js
+myBtn.addEventListner('click', ()=>{
+    console.log('button is clicked!')
+  })
+```
+
+심지어 더 짧게 표현도 가능함. 
+
+```js
+
+const getTwice = function(number){
+  return number*2
+}
+
+const getTwice = (number) => {
+  return number*2
+}
+
+const getTwice = number => return number*2; 
+
+규칙은?
+1. 파라미터가 하나인 경우, 소괄호를 생략 가능
+const getTwice = number => {
+  return number*2
+}
+파라미터가 두개 이상이거나 없을 때는 소괄호 반드시 써야 한다. 
+const getTwice = (a, b) => {
+  return a*b
+}
+const getTwice = () => {
+  return 2*2
+}
+
+2. 내부 동작부분이 리턴문 하나로만 이루어 져 있다면, 중괄호 생략 가능. 
+const getTwice = number => return number*2;
+리턴문 이외에 다른 표현들도 있으면, 생략 불가. 
+리턴값이 객체인 경우도 생략 불가
+const getTwice = number => {name: "Hi"};
+이런 경우는 소괄호 한번 더 감싸면 되긴 함. 
+const getTwice = number => ({name: "Hi"});
+```
+
+단, arrow function에서는 위 `arguments` 객체를 사용할 수 없다. 
+
+#### this
+
+함수 내부에서 주로 사용된다. 
+
+```
+console.log(this)
+
+const user = {
+  firstName : 'Tess', 
+  lastName: 'Jang', 
+  getFullName: function(){
+    return `${user.firstName} ${user.lastName}`
+  }
+}
+
+console.log(user.getFullName())
+```
+
+근데, 이거를 분리하고 싶다면?
+
+```js
+function getFullName(){
+    return `${user.firstName} ${user.lastName}`
+}
+
+const user = {
+  firstName : 'Noel', 
+  lastName: 'Son', 
+  getFullName: getFullName
+}
+
+const admin = {
+  firstName : 'Mei', 
+  lastName: 'Lee', 
+  getFullName: getFullName
+}
+
+console.log(user.getFullName())
+console.log(admin.getFullName())
+```
+
+결과가 이상해. 아래처럼 나온다. 사실 당연한게, getFullName은 user만 보고 있잖아. 
+
+```
+Noel Son
+Noel Son
+```
+
+이런 경우가 this를 써야 되는 거네. 
+
+```js
+function getFullName(){
+    return `${this.firstName} ${this.lastName}`
+}
+
+const user = {
+  firstName : 'Noel', 
+  lastName: 'Son', 
+  getFullName: getFullName
+}
+
+const admin = {
+  firstName : 'Mei', 
+  lastName: 'Lee', 
+  getFullName: getFullName
+}
+
+console.log(user.getFullName())
+console.log(admin.getFullName())
+```
+
+즉, 자바스크립트에서 this는 함수를 호출한 객체를 가리킨다. 즉, 객체의 메서드로 호출하는 경우 매우 중요하지. 
+
+근데 여기서 진짜 중요한게, arrow function이면, this를 어떻게 써도 그 객체를 가리키는게 아니라 window객체를 가리키게 된다. 
+
+정확히는 window가 선언되기 직전 this와 똑같이 되는 것. 
+
