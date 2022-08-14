@@ -1,3 +1,5 @@
+
+
 # Summary
 
 
@@ -297,6 +299,472 @@ console.log(user.getFullName()); // getFullName 안에서의 this는 getFullName
 ```
 
 
+
+# 조건부 연산자 (Conditional operator)
+
+삼항 연산자 (Ternary operator)라고도 불리는 이 연산자는 자바스크립트에서 세 개의 피연산자를 가지는 유일한 연산자 입니다.  if문과 같은 원리로 조건에 따라 값을 결정할 때 활용되는데요.
+
+```js
+const cutOff = 80;
+
+const passChecker = (score) => score > cutOff ? '합격입니다!' : '불합격입니다!';
+
+console.log(passChecker(75));
+```
+
+간단한 조건식의 경우에는 if문 보다 훨씬 더 간결하게 표현할 수 있는 장점이 있지만 내부에 변수나 함수를 선언한다거나 반복문 같은 표현식이 아닌 문장은 작성할 수 없다는 한계가 있기 때문에 if문을 완벽하게 대체할 수는 없다는 점. 꼭 기억해 주세요!
+
+# Spread 구문
+
+여러 개의 값을 묶어놓은 배열이나 객체와 같은 값은 바로 앞에 마침표 세 개를 붙여서 펼칠 수가 있습니다.
+
+```js
+const webPublishing = ['HTML', 'CSS'];
+const interactiveWeb = [...webPublishing, 'JavaScript'];
+
+console.log(webPublishing);
+console.log(interactiveWeb);
+
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+
+const arr3 = [...arr1, ...arr2];
+console.log(arr3);
+```
+
+Spread 구문은 배열이나 객체를 복사하거나 혹은 복사해서 새로운 요소들을 추가할 때 유용하게 활용 될 수 있습니다. 참고로 배열은 객체로 펼칠 수 있지만 객체는 배열로 펼칠 수 없다는 부분도 잘 기억해 두시면 좋을 것 같습니다.
+
+```js
+const members = ['태호', '종훈', '우재'];
+const newObject = { ...members };
+
+console.log(newObject); // {0: "태호", 1: "종훈", 2: "우재"}
+
+const topic = {
+  name: '모던 자바스크립트',
+  language: 'JavaScript', 
+}
+const newArray = [...topic]; // TypeError!
+```
+
+# 모던한 프로퍼티 표기법
+
+ES2015 이후부터는 자바스크립트에서 변수나 함수룰 활용해서 프로퍼티를 만들 때 프로퍼티 네임과 변수나 함수 이름이 같다면 다음과 같이 축약해서 사용할 수 있습니다.
+
+```js
+function sayHi() {
+  console.log('Hi!');
+}
+
+const title = 'codeit';
+const birth = 2017;
+const job = '프로그래밍 강사';
+
+const user = {
+  title, 
+  birth, 
+  job, 
+  sayHi,
+};
+
+console.log(user); // {title: "codeit", birth: 2017, job: "프로그래밍 강사", sayHi: ƒ}
+```
+
+그리고 메소드를 작성할 때도 다음과 같이 `function` 키워드를 생략할 수가 있습니다.
+
+```js
+const user = {
+  firstName: 'Tess',
+  lastName: 'Jang',
+  getFullName() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+};
+
+console.log(user.getFullName()); // Tess Jang
+```
+
+뿐만아니라 아래 코드와 같이 **대괄호**를 활용하면 다양한 표현식으로 프로퍼티 네임을 작성할 수도 있으니까 잘 기억해 두셨다가 유용하게 활용해 보세요!
+
+```js
+const propertyName = 'birth';
+const getJob = () => 'job';
+
+const codeit = {
+  ['topic' + 'name']: 'Modern JavaScript',
+  [propertyName]: 2017,
+  [getJob()]: '프로그래밍 강사',
+};
+
+console.log(codeit);
+```
+
+# 구조 분해 Destructuring
+
+배열과 객체와 같이 내부에 여러 값을 담고 있는 데이터 타입을 다룰 때 Destructuring 문법을 활용하면, 배열의 요소나 객체의 프로퍼티 값들을 개별적인 변수에 따로 따로 할당해서 다룰 수가 있습니다.
+
+```js
+// Array Destructuring
+const members = ['코딩하는효준', '글쓰는유나', '편집하는민환'];
+const [macbook, ipad, coupon] = members;
+
+console.log(macbook); // 코딩하는효준
+console.log(ipad); // 글쓰는유나
+console.log(coupon); // 편집하는민환
+
+// Object Destructuring
+const macbookPro = {
+  title: '맥북 프로 16형',
+  price: 3690000,
+};
+
+const { title, price } = macbookPro;
+
+console.log(title); // 맥북 프로 16형
+console.log(price); // 3690000
+```
+
+함수에서 default parater, rest parameter를 다루듯이 Destructuring 문법을 활용할 때도 기본값과 rest 문법을 활용할 수 있습니다.
+
+```js
+// Array Destructuring
+const members = ['코딩하는효준', '글쓰는유나', undefined, '편집하는민환', '촬영하는재하'];
+const [macbook, ipad, airpod = '녹음하는규식', ...coupon] = members;
+
+console.log(macbook); // 코딩하는효준
+console.log(ipad); // 글쓰는유나
+console.log(airpod); // 녹음하는규식
+console.log(coupon); // (2) ["편집하는민환", "촬영하는재하"]
+
+// Object Destructuring
+const macbookPro = {
+  title: '맥북 프로 16형',
+  price: 3690000,
+  memory: '16 GB 2667 MHz DDR4',
+  storage: '1TB SSD 저장 장치',
+};
+
+const { title, price, color = 'silver', ...rest } = macbookPro;
+
+console.log(title); // 맥북 프로 16형
+console.log(price); // 3690000
+console.log(color); // silver
+console.log(rest); // {memory: "16 GB 2667 MHz DDR4", storage: "1TB SSD 저장 장치"}
+```
+
+
+
+# 에러와 에러 객체
+
+자바스크립트에서 에러를 다루는 일은 굉장히 중요하다고 할 수 있는데요. 자바스크립트에서 에러가 발생하면 그 순간 프로그램 자체가 멈춰버리고 이후의 코드가 동작하지 않기 때문입니다.
+
+그리고 에러가 발생하면 에러에 대한 정보를 `name`과 `message`라는 프로퍼티로 담고 있는 **에러 객체**가 만들어지는데요. 대표적인 에러 객체는 SyntaxError, ReferenceError, TypeError 입니다.
+
+에러 객체는 직접 만들 수도 있는데요. `new` 키워드와 에러 객체 이름을 딴 함수를 통해 에러 객체를 만들 수 있고, `throw` 키워드로 에러를 발생시킬 수 있습니다.
+
+```js
+throw new TypeError('타입 에러가 발생했습니다.');
+```
+
+# try catch문
+
+try catch문은 자바스크립트에서 대표적인 에러 처리 방법입니다.
+
+```js
+try {
+  // 실행할 코드
+} catch (error) {
+  // 에러 발생 시 동작할 코드
+}
+```
+
+try문 안에서 실행할 코드를 작성하고, try문에서 에러가 발생한 경우에 실행할 코드를 catch 문 안에 작성하면 되는데요. 이 때 try문에서 발생한 에러 객체가 catch문의 첫 번째 파라미터로 전달됩니다. 만약, try문에서 에러가 발생하지 않을 경우 catch문의 코드는 동작하지 않습니다.
+
+그리고 try catch문에서 에러의 유무와 상관없이 항상 동작해야할 코드가 필요하다면 finally문을 활용할 수 있습니다.
+
+```js
+try {
+  // 실행할 코드
+} catch (error) {
+  // 에러가 발상했을 때 실행할 코드
+} finally {
+  // 항상 실행할 코드
+}
+```
+
+# forEach 메소드
+
+배열의 요소를 하나씩 살펴보면서 반복 작업을 하는 메소드입니다. `forEach` 메소드는 첫 번째 아규먼트로 콜백 함수를 전달받는데요. 콜백 함수의 파라미터에는 각각 배열의 요소, index, 메소드를 호출한 배열이 전달됩니다. (index와 array는 생략가능)
+
+```js
+const numbers = [1, 2, 3];
+
+numbers.forEach((element, index, array) => {
+  console.log(element); // 순서대로 콘솔에 1, 2, 3이 한 줄씩 출력됨.
+});
+```
+
+# map 메소드
+
+`forEach`와 비슷하게 배열의 요소를 하나씩 살펴보면서 반복 작업을 하는 메소드 입니다. 단, 첫 번째 아규먼트로 전달하는 콜백 함수가 매번 리턴하는 값들을 모아서 새로운 배열을 만들어 리턴하는 특징이 있습니다.
+
+```js
+const numbers = [1, 2, 3];
+const twiceNumbers = numbers.map((element, index, array) => {
+  return element * 2;
+});
+
+console.log(twiceNumbers); // (3) [2, 4, 6]
+```
+
+# filter 메소드
+
+`filter` 메소드는 배열의 요소를 하나씩 살펴보면서 콜백함수가 리턴하는 조건과 일치하는 요소만 모아서 새로운 배열을 리턴하는 메소드입니다.
+
+```js
+const devices = [
+  {name: 'GalaxyNote', brand: 'Samsung'},
+  {name: 'MacbookPro', brand: 'Apple'},
+  {name: 'Gram', brand: 'LG'},
+  {name: 'SurfacePro', brand: 'Microsoft'},
+  {name: 'ZenBook', brand: 'Asus'},
+  {name: 'MacbookAir', brand: 'Apple'},
+];
+
+const apples = devices.filter((element, index, array) => {
+  return element.brand === 'Apple';
+});
+
+console.log(apples); // (2) [{name: "MacbookPro", brand: "Apple"}, {name: "MacbookAir", brand: "Apple"}]
+```
+
+# find 메소드
+
+`find` 메소드는 `filter` 메소드와 비슷하게 동작하지만, 배열의 요소들을 반복하는 중에 콜백함수가 리턴하는 조건과 일치하는 가장 첫번째 요소를 리턴하고 반복을 종료하는 메소드 입니다.
+
+```js
+const devices = [
+  {name: 'GalaxyNote', brand: 'Samsung'},
+  {name: 'MacbookPro', brand: 'Apple'},
+  {name: 'Gram', brand: 'LG'},
+  {name: 'SurfacePro', brand: 'Microsoft'},
+  {name: 'ZenBook', brand: 'Asus'},
+  {name: 'MacbookAir', brand: 'Apple'},
+];
+
+const myLaptop = devices.find((element, index, array) => {
+  console.log(index); // 콘솔에는 0, 1, 2까지만 출력됨.
+  return element.name === 'Gram';
+});
+
+console.log(myLaptop); // {name: "Gram", brand: "LG"}
+```
+
+# some 메소드
+
+`some` 메소드는 배열 안에 콜백함수가 리턴하는 조건을 만족하는 요소가 1개 이상 있는지를 확인하는 메소드 입니다. 배열을 반복하면서 모든 요소가 콜백함수가 리턴하는 조건을 만족하지 않는다면 `false`를 리턴하고, 배열을 반복하면서 콜백함수가 리턴하는 조건을 만족하는 요소가 등장한다면 바로 `true`를 리턴하고 반복을 종료합니다.
+
+```js
+const numbers = [1, 3, 5, 7, 9];
+
+// some: 조건을 만족하는 요소가 1개 이상 있는지
+const someReturn = numbers.some((element, index, array) => {
+  console.log(index); // 콘솔에는 0, 1, 2, 3까지만 출력됨.
+  return element > 5;
+});
+
+console.log(someReturn); // true;
+```
+
+# every 메소드
+
+`every` 메소드는 배열 안에 콜백 함수가 리턴하는 조건을 만족하지 않는 요소가 1개 이상 있는지를 확인하는 메소드 입니다. 배열을 반복하면서 모든 요소가 콜백함수가 리턴하는 조건을 만족한다면 `true`를 리턴하고, 배열을 반복하면서 콜백함수가 리턴하는 조건을 만족하지 않는 요소가 등장한다면 바로 `false`를 리턴하고 반복을 종료합니다.
+
+```js
+const numbers = [1, 3, 5, 7, 9];
+
+// some: 조건을 만족하는 요소가 1개 이상 있는지
+const everyReturn = numbers.every((element, index, array) => {
+  console.log(index); // 콘솔에는 0까지만 출력됨.
+  return element > 5;
+});
+
+console.log(everyReturn); // false;
+```
+
+# reduce 메소드
+
+`reduce` 메소드는 누적값을 계산할 때 활용하는 조금 독특한 메소드 입니다. `reduce` 메소드는 일반적으로 두 개의 파라미터를 활용하는데요. 첫 번째는 반복동작할 콜백함수입니다. 매번 실행되는 콜백함수의 리턴값이 다음에 동작할 콜백함수의 첫번째 파라미터로 전달되는데요. 결과적으로 마지막 콜백함수가 리턴하는 값이 `reduce` 메소드의 최종 리턴값이 되는겁니다. 이 때 `reduce` 메소드의 두 번째 파라미터로 전달한 초기값이 첫 번째로 실행될 콜백함수의 가장 첫 번째 파라미터로 전달되는 것이죠.
+
+```js
+const numbers = [1, 2, 3, 4];
+
+// reduce
+const sumAll = numbers.reduce((accumulator, element, index, array) => {
+  return accumulator + element;
+}, 0);
+
+console.log(sumAll); // 10
+```
+
+처음에는 조금 복잡할 수 있지만, 원리를 잘 이해하고나면 유용하게 활용할 수 있으니 포기하지 마시고 잘 기억해 주세요!
+
+# sort 메소드
+
+배열에서 `sort`라는 메소드를 활용하면 배열을 정렬할 수 있습니다. `sort` 메소드에 아무런 아규먼트도 전달하지 않을 때는 기본적으로 [유니코드](https://ko.wikipedia.org/wiki/유니코드)에 정의된 문자열 순서에 따라 정렬됩니다.
+
+```js
+const letters = ['D', 'C', 'E', 'B', 'A'];
+const numbers = [1, 10, 4, 21, 36000];
+
+letters.sort();
+numbers.sort();
+
+console.log(letters); // (5) ["A", "B", "C", "D", "E"]
+console.log(numbers); // (5) [1, 10, 21, 36000, 4]
+```
+
+그렇기 때문에 `numbers`에 `sort` 메소드를 사용한 것 처럼, 숫자를 정렬할 때는 우리가 상식적으로 이해하는 오름차순이나 내림차순 정렬이 되지 않습니다. 그럴 땐 `sort` 메소드에 다음과 같은 콜백함수를 아규먼트로 작성해주면 되는데요.
+
+```js
+const numbers = [1, 10, 4, 21, 36000];
+
+// 오름차순 정렬
+numbers.sort((a, b) => a - b);
+console.log(numbers); // (5) [1, 4, 10, 21, 36000]
+
+// 내림차순 정렬
+numbers.sort((a, b) => b - a);
+console.log(numbers); // (5) [36000, 21, 10, 4, 1]
+```
+
+`sort` 메소드를 사용할 때 한 가지 주의해야될 부분은 `메소드를 실행하는 원본 배열의 요소들을 정렬`한다는 점입니다. 그래서 한 번 정렬하고 나면 정렬하기 전의 순서로 다시 되돌릴 수 없으니까, 원본 배열의 순서가 필요하다면 미리 다른 변수에 복사해두는 것이 좋겠죠!?
+
+# reverse 메소드
+
+`reverse` 메소드는 말 그대로 배열의 순서를 뒤집어 주는 메소드 입니다. `reverse` 메소드는 별도의 파라미터가 존재하지 않기 때문에 단순이 메소드를 호출해주기만 하면 배열의 순서가 뒤집히는데요. `sort` 메소드와 마찬가지로 **원본 배열의 요소들을 뒤집어 버린다**는 점은 꼭 주의헤야 합니다.
+
+```js
+const letters = ['a', 'c', 'b'];
+const numbers = [421, 721, 353];
+
+letters.reverse();
+numbers.reverse();
+
+console.log(letters); // (3) ["b", "c", "a"]
+console.log(numbers); // (3) [353, 721, 421]
+```
+
+# Map
+
+Map은 이름이 있는 데이터를 저장한다는 점에서 **객체와 비슷**합니다. 하지만, 할당연산자를 통해 값을 추가하고 점 표기법이나 대괄호 표기법으로 접근하는 일반 객체와 다르게 Map은 메소드를 통해서 값을 추가하거나 접근할 수 있는데요. `new` 키워드를 통해서 Map을 만들 수 있고 아래와 같은 메소드를 통해 Map 안의 여러 값들을 다룰 수 있습니다.
+
+- map.set(key, value): key를 이용해 value를 추가하는 메소드.
+- map.get(key): key에 해당하는 값을 얻는 메소드. key가 존재하지 않으면 undefined를 반환.
+- map.has(key): key가 존재하면 true, 존재하지 않으면 false를 반환하는 메소드.
+- map.delete(key): key에 해당하는 값을 삭제하는 메소드.
+- map.clear(): Map 안의 모든 요소를 제거하는 메소드.
+- map.size: 요소의 개수를 반환하는 프로퍼티. (메소드가 아닌 점 주의! 배열의 length 프로퍼티와 같은 역할)
+
+```js
+// Map 생성
+const codeit = new Map();
+
+// set 메소드
+codeit.set('title', '문자열 key');
+codeit.set(2017, '숫자형 key');
+codeit.set(true, '불린형 key');
+
+// get 메소드
+console.log(codeit.get(2017)); // 숫자형 key
+console.log(codeit.get(true)); // 불린형 key
+console.log(codeit.get('title')); // 문자열 key
+
+// has 메소드
+console.log(codeit.has('title')); // true
+console.log(codeit.has('name')); // false
+
+// size 프로퍼티
+console.log(codeit.size); // 3
+
+// delete 메소드
+codeit.delete(true);
+console.log(codeit.get(true)); // undefined
+console.log(codeit.size); // 2
+
+// clear 메소드
+codeit.clear();
+console.log(codeit.get(2017)); // undefined
+console.log(codeit.size); // 0
+```
+
+문자열과 심볼 값만 key(프로퍼티 네임)로 사용할 수 있는 일반 객체와는 다르게 Map 객체는 메소드를 통해 값을 다루기 때문에, 다양한 자료형을 key로 활용할 수 있다는 장점이 있습니다.
+
+# Set
+
+Set은 여러 개의 값을 순서대로 저장한다는 점에서 **배열과 비슷**합니다. 하지만, 배열의 메소드는 활용할 수 없고 Map과 비슷하게 Set만의 메소드를 통해서 값을 다루는 특징이 있는데요. Map과 마찬가지로 `new` 키워드로 Set을 만들 수 있고 아래와 같은 메소드를 통해 Set 안의 여러 값들을 다룰 수 있습니다.
+
+- set.add(value): 값을 추가하는 메소드. (메소드를 호출한 자리에는 추가된 값을 가진 Set 자신을 반환.)
+- set.has(value): Set 안에 값이 존재하면 true, 아니면 false를 반환하는 메소드.
+- set.delete(value): 값을 제거하는 메소드. (메소드를 호출한 자리에는 셋 내에 값이 있어서 제거에 성공하면 true, 아니면 false를 반환.)
+- set.clear(): Set 안의 모든 요소를 제거하는 메소드.
+- set.size: 요소의 개수를 반환하는 프로퍼티. (메소드가 아닌 점 주의! 배열의 length 프로퍼티와 같은 역할)
+
+```js
+// Set 생성
+const members = new Set();
+
+// add 메소드
+members.add('영훈'); // Set(1) {"영훈"}
+members.add('윤수'); // Set(2) {"영훈", "윤수"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+
+// has 메소드
+console.log(members.has('동욱')); // true
+console.log(members.has('현승')); // false
+
+// size 프로퍼티
+console.log(members.size); // 4
+
+// delete 메소드
+members.delete('종훈'); // false
+console.log(members.size); // 4
+members.delete('태호'); // true
+console.log(members.size); // 3
+
+// clear 메소드
+members.clear();
+console.log(members.size); // 0
+```
+
+한가지 특이한 점은 일반 객체는 프로퍼티 네임으로, Map은 `get`메소드로, 그리고 배열은 index를 통해서 개별 값에 접근할 수 있었는데요. 한 가지 특이한 점은 Set에는 개별 값에 바로 접근하는 방법이 없다는 점입니다.
+
+```js
+// Set 생성
+const members = new Set();
+
+// add 메소드
+members.add('영훈'); // Set(1) {"영훈"}
+members.add('윤수'); // Set(2) {"영훈", "윤수"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+
+for (const member of members) {
+  console.log(member); // 영훈, 윤수, 동욱, 태호가 순서대로 한 줄 씩 콘솔에 출력됨.
+}
+```
+
+그래서 위 코드와 같이 반복문을 통해서 전체요소를 한꺼번에 다룰 때 반복되는 그 순간에 개별적으로 접근할 수가 있습니다. 그런데, 이런 특징을 가지고도 Set이 유용하게 사용되는 경우가 있는데요. 바로, **중복을 허용하지 않는 값들을 모을 때**입니다.
+
+Set은 **중복되는 값을 허용하지 않는 독특한 특징**이 있는데요. Set 객체에 요소를 추가할 때 이미 Set 객체 안에 있는 값(중복된 값)을 추가하려고 하면 그 값은 무시되는 특징이 있습니다. 처음 Set을 생성할 때 아규먼트로 배열을 전달할 수가 있는데요. 이런 특징을 활용해서 배열 내에서 중복을 제거한 값들의 묶음을 만들 때 Set을 활용할 수 있습니다.
+
+```js
+const numbers = [1, 3, 4, 3, 3, 3, 2, 1, 1, 1, 5, 5, 3, 2, 1, 4];
+const uniqNumbers = new Set(numbers);
+
+console.log(uniqNumbers); // Set(5) {1, 3, 4, 2, 5}
+```
 
 
 
@@ -1228,3 +1696,1332 @@ console.log(admin.getFullName())
 
 정확히는 window가 선언되기 직전 this와 똑같이 되는 것. 
 
+
+
+
+
+
+
+# 자바스크립트 문법과 표현
+
+이번 챕터를 본격적으로 시작하기 전에, 자바스크립트의 다양한 문법들을 이해할 때 알아두면 유용한 기초 개념을 한 번 짚고 넘어가고자 합니다.  바로, **문장**과 **표현식**에 대한 개념인데요. 영어로는 각각 **statements**와 **expressions**라고 부릅니다.
+
+# 문장 (statements)
+
+우리가 작성하는 모든 자바스크립트 코드는 모두 **문장과 표현식**으로 구성되어 있습니다.  먼저, 자바스크립트에서 문장은 **어떤 동작이 일어나도록 작성된 최소한의 코드 덩어리**를 가리킵니다.
+
+예를 들어서
+
+```js
+let x; 
+x = 3;
+
+if (x < 5) {
+  console.log('x는 5보다 작다');
+} else {
+  console.log('x는 5와 같거나 크다');
+}
+
+for (let i = 0; i < 5; i++) {
+  console.log(i);
+}
+```
+
+이 코드의 첫 번째 줄도 `x`라는 변수를 선언하는 동작이 일어나는 하나의 문장이고, 두 번째 줄도 `x`에 3이라는 값을 할당하는 동작이 일어나는 하나의 문장입니다. 그리고 4번줄 부터 8번줄 까지도 하나의 문장이고 그리고 10번줄 부터 12번줄 까지도 반복 동작을 하는 문장의 예시라고 볼 수 있는데요. 선언문, 할당문, 조건문, 반복문 .. 이렇게 끝에 문이라고 붙은 이유가 모두 동작을 수행하는 문장이기 때문입니다.
+
+# 표현식 (expressions)
+
+표현식은 **결과적으로 하나의 값이 되는 모든 코드**를 가리킵니다. 이게 무슨 말이냐면,
+
+```js
+5 // 5
+
+'string' // string
+```
+
+어떤 하나의 값을 그대로 작성하는 것도 표현식이지만,
+
+```js
+5 + 7 // 12
+
+'I' + ' Love ' + 'Codeit' // I Love Codeit
+
+true && null // null
+```
+
+이렇게 연산자를 이용한 연산식도 결국은 하나의 값이 되고,
+
+```js
+const title = 'JavaScript';
+const codeit = {
+  name: 'Codeit'
+};
+const numbers = [1, 2, 3];
+
+typeof codeit // object
+title // JavaScript
+codeit.name // Codeit
+numbers[3] // undefined
+```
+
+위 코드의 마지막 네 줄처럼 선언된 변수를 호출하거나, 객체의 프로퍼티에 접근하는 것도 결국에는 하나의 값으로 평가되는데요. 그래서 길이와는 상관없이 결과적으로 하나의 값이 되는 코드를 모두 **표현식**이라고 할 수가 있습니다.
+
+# 표현식이면서 문장, 문장이면서 표현식
+
+표현식은 보통 문장의 일부로 쓰이지만, 그 자체로 문장일 수도 있습니다. 가장 대표적인 예시가 할당식과 함수 호출인데요.
+
+```js
+문장 - 여떤 동작이 일어나게 하는 최소 단위. 
+// 할당 연산자는 값을 할당하는 동작도 하지만, 할당한 값을 그대로 가지는 표현식이다.
+title = 'JavaScript'; // JavaScript
+
+// 함수 호출은 함수를 실행하는 동작도 하지만, 실행한 함수의 리턴 값을 가지는 표현식(결과적으로 하나의 값)이다.
+sayHi(); // sayHi 함수의 리턴 값
+
+// console.log 메소드는 콘솔에 아규먼트를 출력하는 동작도 하지만, undefined 값을 가지는 표현식이다.
+console.log('hi'); // undefined
+```
+
+사실은 할당연산자 자체가 할당한 값을 그대로 리턴하는 특징이 있기 때문에 연산 자체로 값이 되는 표현식(**하나의 값**)이기도 합니다. 그런ㄴ데 할당식은 왼쪽에 있는 피연산자에 오른쪽 피연산자 값을 할당하는 동작을 하기 때문에, 문장이 되기도 하죠? 그리고 함수 호출도 함수를 호출한 자리가 결국에는 하나의 리턴하는 값을 가지기 때문에 표현식이라고 할 수도 있지만 함수 내부에 정의한 코드를 실행하는 동작이기 때문에 문장이 되기도 하는 것이죠.
+
+# 표현식인 문장 vs 표현식이 아닌 문장
+
+결과적으로 문장은 다시 **표현식인 문장과, 표현식이 아닌 문장**으로 나눌 수 있는데요. 이 둘을 구분하는 가장 간단한 방법은 우리가 구분하고자 하는 문장을 변수에 할당하거나, 어떤 함수의 아규먼트로 전달해보는 겁니다.
+
+```js
+let x; 
+x = 3;
+
+console.log(if (x < 5) {
+  console.log('x는 5보다 작다');
+} else {
+  console.log('x는 5보다 크다');
+});
+
+const someloop = for (let i = 0; i < 5; i++) {
+  console.log(i);
+};
+```
+
+`console.log` 메소드의 아규먼트로 if문을 전달하거나 `someloop`라는 변수에 for 반복문을 할당하게 되면, Error가 발생하게 되는데요. 조건문이나 반복문은 값으로 평가되지 않고 오로지 문장으로만 평가되기 때문입니다.
+
+# 마무리
+
+이번 시간에는 문장과 표현식에 대해서 살펴봤는데요. 처음 프로그래밍을 공부할 때는 여러 문법들 속에 이 둘의 개념이 코드 속에 너무나도 자연스럽게 녹아있기 때문에 별로 중요하게 생각하지 않고 그냥 넘어가는 경우가 생각보다 많이 있는데요. 다른 사람들이 작성한 코드의 맥락을 이해하는데에도 도움이 되지만, 자바스크립트의 문법을 좀 더 깊이 이해하고 능숙하게 다루기 위해서도 이 문장과 표현식에 대한 개념을 명확히 해 두는 것이 좋습니다.
+
+참고로 자바스크립트에서 특별한 경우를 제외하면 일반적으로 표현식인 문장은 세미콜론으로, 표현식이 아닌 문장은 문장 자체의 코드 블록(중괄호)로 그 문장의 범위가 구분되는데요.
+
+```js
+(3 + 4) * 2;
+console.log('Hi!');
+
+while(true) {
+  x++;
+}
+```
+
+그래서 다른 사람들이 작성한 코드를 볼 때도 이 세미콜론과 중괄호를 따라가 보면 좀 더 쉽게 표현식인 문장과 표현식이 아닌 문장을 구분할 수가 있는데요. 물론 우리가 코드를 작성할 때도 이런 점을 잘 구분해서 세미콜론을 사용하는 게 좋겠죠!?
+
+
+
+
+
+## 조건을 다루는 표현식
+
+- **if**
+
+  ```js
+  // 조건연산자 (Conditional Operator)
+  if (조건) {
+    // 조건이 true 일 때 동작  
+  } else {
+    // 조건이 false 일 때 동작
+  }
+  
+  ```
+
+- **switch**
+
+  ```js
+  <script>
+    var 변수;
+  
+    switch ( 변수 )
+    {
+      case 상수1 :     //변수 = 상수1 이면, 실행문 A 실행
+        실행문 A
+        break;     //swtich { } 코드 블록 탈출
+  
+      case 상수2 :     //변수 != 상수1 이고, 변수 = 상수2 이면, 실행문 B 실행
+        실행문 B
+        break;     //swtich { } 코드 블록 탈출
+  
+      default :    //변수 != 상수1 이고, 변수 != 상수2 이면, 실행문 C 실행
+        실행문 C
+  
+    }
+  </script>
+  
+  ```
+
+  
+
+- `조건 ? 조건이 truthy 할 때 표현식 : 조건이 falsy 할 때 표현식`. 단 이것이 모든 것을 대체할 수는 없다. 
+
+  ```js
+    // 조건연산자 - 삼항 연산자  
+    const CUT_OFF = 80;
+    function passChecker(score){
+      return score > CUT_OFF ? '합격!' : '불합격!';
+    }
+  
+    console.log(passChecker(75))
+  ```
+
+### Spread 구문
+
+- ```js
+  const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  console.log(numbers)
+  console.log(...numbers) == console.log(1, 2, 3) // 1, 2, 3, 4... 
+  
+  개별값으로 펼쳐진다. 
+  ```
+
+  rest파라미터 받을때도 ... 사용했었지. 
+
+- 앞에서 말했다 시피, 객체타입은 주소값이 참조된다. 아래 보면, 같이 push 된다. 
+
+  ```js
+  const webPublishing = ['HTML', 'CSS']
+  const interativeWeb = webPublishing; 
+  
+  interativeWeb.push('JAVASCRIPT')
+  console.log(interativeWeb)
+  	
+  ```
+
+  - 이런 경우,  **slice()** 활용해서, 배열 복사해야 된다고 했었다. 
+
+    ```js
+    const interativeWeb = webPublishing.slice()
+    ```
+
+    이때, spread구문 활용하면 엄청 좋지. 메서드 사용 안하고도 배열 복사 가능. 
+
+    ```js
+    const interativeWeb = [...webPublishing]
+    ```
+
+    심지어 아래처럼 요소 추가하면서 복사도 가능. 
+
+    ```js\
+    const interativeWeb = [...webPublishing, "Python"]
+    ```
+
+  - 여러 배열 합칠때도, 그냥 아래처럼 하면 끝. 
+
+    ```js
+    const arr1 = [1, 2, 3]
+    const arr2 = [4, 5, 6]
+    
+    const arr3 = [...arr1, ...arr2]
+    console.log(arr3)
+    ```
+
+    
+
+  - 함수 호출할때, argument로도 활용 가능. 
+
+    ```js
+    const introduce = (name, birth, job) => {
+      console.log(name)
+      console.log(birth)
+      console.log(job)
+    }
+    
+    const myArr = ['Son', '1993', 'Marketer']
+    introduce(...myArr)
+    ```
+
+  - 한가지 신기한 것은, 배열을 펼쳐서 객체로 담으면?
+
+    ```js
+    const members = ['SH', 'MY', 'HI']
+    const newObject = {...members}
+    console.log(newObject)
+    ```
+
+    ```
+    결과 => {0: 'SH', 1: 'MY', 2: 'HI'}
+    ```
+
+    지난 영상에서 Spread 구문에 대해서 살펴봤습니다. Spread 구문은 특히 배열을 다룰 때 유용하게 활용할 수 있었는데요. 그래서 사실 ES2015에서 Spread 구문이 처음 등장했을 땐 배열에서만 사용이 가능했고, 일반 객체에는 사용할 수가 없었습니다. 그러다가 ES2018에서 일반 객체에도 Spread 구문을 사용할 수있는 표준이 등장하게 되었는데요. 2018년이 훨씬 지난 지금, 대부분의 브라우저에서는 객체를 복사하거나 기존의 객체를 가지고 새로운 객체를 만들 때 Spread 구문 활용할 수가 있습니다.
+
+    # 객체 Spread하기
+
+    아래 코드를 살펴봅시다.
+
+    ```js
+    const codeit = { 
+      name: 'codeit', 
+    };
+    
+    const codeitClone = { 
+      ...codeit, // spread 문법!
+    };
+    
+    console.log(codeit); // {name: "codeit"}
+    console.log(codeitClone); // {name: "codeit"}
+    ```
+
+    이렇게 중괄호 안에서 객체를 spread 하게되면, 해당 객체의 프로퍼티들이 펼쳐지면서 객체를 복사할 수가 있게 됩니다.
+
+    ```js
+    const latte = {
+      esspresso: '30ml',
+      milk: '150ml'
+    };
+    
+    const cafeMocha = {
+      ...latte,
+      chocolate: '20ml',
+    }
+    
+    console.log(latte); // {esspresso: "30ml", milk: "150ml"}
+    console.log(cafeMocha); // {esspresso: "30ml", milk: "150ml", chocolate: "20ml"}
+    ```
+
+    이런 식으로 다른 객체가 가진 프로퍼티에 다른 프로퍼티를 추가해서 새로운 객체를 만들 때 활용할 수도 있겠죠?
+
+    # 주의 사항
+
+    Spread 구문을 사용해서 **새로운 배열**을 만든다거나 **함수의 아규먼트**로 **사용할 수는 없습니다.**
+
+    ```js
+    const latte = {
+      esspresso: '30ml',
+      milk: '150ml'
+    };
+    
+    const cafeMocha = {
+      ...latte,
+      chocolate: '20ml',
+    }
+    
+    [...latte]; // Error
+    
+    (function (...args) {
+      for (const arg of args) {
+        console.log(arg);
+      }
+    })(...cafeMocha); // Error
+    ```
+
+    그렇기 때문에 객체를 spread할 때는 **반드시 객체를 표현하는 중괄호 안에서 활용해야 한다는 점**. 잘 기억해 두시면 좋을 것 같습니다! :)
+
+### 모던한 프로퍼티 표기법
+
+- 객체에 넣을때, 기존의 변수의 이름과 해당 객체에 들어가게 될 프로퍼티의 이름이 똑같다면, 아래처럼 가능. 
+
+  ```js
+  const user = {
+    title : "SON",
+    birth : 1993,
+    job : "Worker"
+  }
+  
+  console.log(user)
+  
+  -------------------
+  
+  const title = "SON"
+  const user = {
+    title, 
+    birth : 1993,
+    job : "Worker"
+  }
+  ```
+
+  함수도 마찬가지. 아래처럼 가능함. 
+
+  ```js
+  
+  function getFulllName() {
+    return `SON ${user.title}`
+  }
+  
+  
+  const user = {
+    getFulllName
+  }
+  ```
+
+  또한, 객체 내부에서 메서드 선언할 때, 콜론과 function 키워드 생략 가능. 
+
+  ```js
+  const user = {
+    getFulllName : function() {
+      return `SON ${user.title}`
+    }
+  }
+  
+  ----------아래처럼 가능. 
+  
+  const user = {
+    getFulllName() {
+      return `SON ${user.title}`
+    }
+  }
+  ```
+
+  또한 대괄호를 쓰면, 변수에 담긴 값 혹은 함수의 리턴 값까지도 프로퍼티 이름으로 사용할 수 있게 됨. 
+
+  ```js
+  // 표현식도 객체의 프로퍼티로 사용 가능. 
+  const user = {
+    ['CODE'+ "IT"] : 'value'
+  }
+  
+  console.log(user)
+  ```
+
+  
+
+
+
+# 옵셔널 체이닝 (Optional Chaining)
+
+바로 ECMAScript2020에서 등장한 옵셔널 체이닝이라는 접근 방법입니다. 일반적으로 객체의 프로퍼티는 점 표기법을 통해서 접근하게 되는데요.
+
+아래 코드를 잠시 살펴봅시다.
+
+```js
+function printCatName(user) {
+  console.log(user.cat.name);
+}
+
+const user1 = {
+  name: 'Captain',
+  cat: {
+    name: 'Crew',
+    breed: 'British Shorthair',
+  }
+}
+
+printCatName(user1); // Crew
+```
+
+객체를 활용해서 데이터를 표현하다 보면 이렇게 중첩된 객체를 작성하게 될 일이 빈번하고, 함수에서도 이런 중첩 객체의 프로퍼티를 활용할 일이 많은데요. 중첩된 객체의 프로퍼티에 접근하는 방법은 이미 다 알고 계시죠? 함수 `printCatName`은 `user` 파라미터에 중첩된 `cat`객체의 `name` 프로퍼티를 콘솔에 출력해주는 함수입니다.
+
+그런데, 이렇게 중첩 객체를 다룰 때 한가지 조심해야 될 부분이 있습니다.
+
+```js
+const user2 = {
+  name: 'Young',
+}
+
+console.log(user2.cat); // undefined
+printCatName(user2); // TypeError: Cannot read property 'name' of undefined
+```
+
+여러 가지 상황에 맞춰 데이터를 다루다 보면 때로는 우리가 예상한 프로퍼티를 가지고 있지 않을 수도 있는데요. `cat` 프로퍼티를 가지고 있지 않은 `user2`는 `cat` 프로퍼티가 `undefined`이기 때문에 `user2.cat.name`에 접근하려는 순간 에러가 발생하게 됩니다.
+
+**그래서 `printCatName`과 같이 중첩된 객체의 프로퍼티를 다룰 때는 `user.cat.name`에 접근하기 전에 `user.cat`이 `null` 혹은 `undefined`가 아니라는 것을 검증하고 접근해야 에러를 방지할 수가 있는데요.**
+
+```js
+function printCatName(user) {
+  console.log(user.cat && user.cat.name);
+}
+```
+
+if문을 활용할 수도 있지만, 일반적으로는 간결하게 AND 연산자를 활용해서 이 문제를 해결하곤 했었습니다. 그런데 이마저도 객체의 이름이나 프로퍼티의 이름이 길어질수록 가독성이 나빠지는 문제가 있는데요, 이런 상황에 훨씬 더 코드를 간결하게 사용할 수 있는 문법이 바로 옵셔널 체이닝(Optional Chaining)입니다.
+
+```js
+function printCatName(user) {
+  console.log(user.cat?.name);
+}
+```
+
+위 코드에서 볼 수 있는 것처럼 물음표와 마침표를 붙여 사용하는 부분이 바로 `옵셔널 체이닝 연산자(?.)`인데요. 만약 옵셔널 체이닝 연산자 왼편의 프로퍼티 값이 `undefined` 또는 `null`이 아니라면 그다음 프로퍼티 값을 리턴하고 그렇지 않은 경우에는 undefined를 반환하는 문법입니다.
+
+옵셔널 체이닝 연산자의 동작 원리를 삼항 연산자를 통해 구체적으로 표현하면 다음과 같이 작성할 수 있는데요.
+
+```js
+function printCatName(user) {
+  console.log((user.cat === null || user.cat === undefined) ? undefined : user.cat.name);
+}
+```
+
+이렇게 보니 옵셔널 체이닝 연산자가 어떻게 동작하는지 이해가 되죠? 이전에 배운 null 병합 연산자와 함께 활용하면 다음과 같이 응용할 수도 있습니다.
+
+```js
+function printCatName(user) {
+  console.log(user.cat?.name ?? '함께 지내는 고양이가 없습니다.');
+}
+
+const user2 = {
+  name: 'Young',
+}
+
+printCatName(user2); // 함께 지내는 고양이가 없습니다.
+```
+
+이후 레슨에서 자세히 다루겠지만 자바스크립트에서 에러를 방지하는 일은 굉장히 중요한데요. 중첩된 객체를 다룰 때 에러를 방지하기 위해 다양한 방식을 활용할 수 있지만 옵셔널 체이닝 연산자를 활용하면 훨씬 더 간결하게 코드를 작성할 수 있다는 점! 잘 기억해 두세요! :)
+
+
+
+
+
+## 구조 분해(Destructuring)
+
+- 배열 
+
+  ```js
+  const rank = ["sang", "hyuk", "mi", "young"]
+  
+  const macbook = rank[0]
+  const ipad = rank[1]
+  const airpod = rank[2]
+  const coupon = rank[3]
+  ```
+
+  이걸 간단하게 표현 가능. 변수 배열로 선언해놓고, rank배열을 할당해버림. 이러면 위와 똑같이 된다. 
+
+  ```js
+  const [mac, ipad, airpod, coupon] = rank
+  ```
+
+  또한, 꼭 선언된 갯수와 변수의 갯수가 같을 필요는 없다. 길이 넘치는 요소는 알아서 할당 안됨. 아래처럼이 가능하다는 뜻.  
+
+  ```js
+  const rank = ["sang", "hyuk", "mi", "young", 'hi']
+  
+  // const macbook = rank[0]
+  // const ipad = rank[1]
+  // const airpod = rank[2]
+  // const coupon = rank[3]
+  
+  const [mac, ipad, airpod, coupon] = rank
+  ```
+
+  근데 하나 더 좋은 기능. 아래처럼도 가능. 배열로 coupon에 넣어버림 
+
+  / / `console.log(coupon) -> ['young', 'hi']`
+
+  ```js
+  const rank = ["sang", "hyuk", "mi", "young", 'hi']
+  
+  // const macbook = rank[0]
+  // const ipad = rank[1]
+  // const airpod = rank[2]
+  // const coupon = rank[3]
+  
+  const [mac, ipad, airpod, ...coupon] = rank
+  console.log(coupon)
+  ```
+
+  그런데, 반대로 선언되는 갯수가 더 적은 경우는? -> 예상했던 데로 `undefined`가 된다. 
+
+  ```js
+  const rank = ["sang", "hyuk"]
+  
+  const [mac, ipad, airpod, coupon] = rank
+  ```
+
+  단, 이런 상황 방지 위해 기본값을 설정 가능. 
+
+  ```js
+  const rank = ["sang", "hyuk"]
+  
+  const [mac, ipad, airpod, coupon="없음"] = rank
+  ```
+
+  서로 변수 교환할때는?
+
+  ```js
+  let rank1 = "Hi";
+  let rank2 = "Bye";
+  
+  console.log(rank1)
+  console.log(rank2)
+  
+  [rank2, rank1] = [rank1, rank2]
+  
+  console.log(rank1);
+  console.log(rank2);
+  
+  ```
+
+  예시코드
+
+  ```js
+  // 1. Destructuring 문법을 활용해서 numbers 배열의 각 요소를 one, two, three라는 변수에 할당해보세요.
+  const numbers = [1, 2, 3];
+  const [one, two, three] = numbers;
+  
+  
+  
+  // 2. Destructuring 문법을 활용해서 TV는 livingRoom, 나머지 요소들(배열)은 kitchen 변수에 할당해 주세요.
+  const products = ['TV', '식탁', '냉장고', '전기밥솥', '전자레인지', '오븐', '식기세척기'];
+  const [livingRoom, ...kitchen] = products;
+  
+  
+  
+  // 3. Destructuring 문법을 활용해서 두 변수의 값을 서로 바꿔주세요.
+  let firstName = 'Kang';
+  let lastName = 'Young';
+  [firstName, lastName] = [lastName, firstName];
+  ```
+
+- **Destructuring 2 [객체 분해]**
+
+  - 점 표기법 안쓰고, 간결하게 프로퍼티 네임 자체로 변수를 사용하고자 한다면?
+
+    ```js
+    const macbook = {
+      title : 'HI', 
+      description : 'The Hi, III, and the IV programming language.',
+      url : 'https://www.huhi.org/',
+      image : 'https://www.huhi.org/images/image.png'
+    }
+    
+    
+    // 변수의 이름과 똑같은 프로퍼티가 있으면, 거기에 할당하는 방식.
+    
+    const {title, price} = macbook;
+    ```
+
+    객체에 존재하지 않는 변수이면, `undefined`가 된다. 
+
+    또한 똑같이 기본값도 설정 가능하다. 
+
+    ```js
+    const {title, price="default value"} = macbook;
+    ```
+
+    이것도 rest처럼 사용 가능. 남은 애들 싹다 모아서 객체로 만들어 준다. 
+
+    ```js
+    const {title, ...price} = macbook;
+    ```
+
+    만약 할당받는 변수 이름을 다르게 가져가고 싶으면?
+
+    ```js
+    const {title: product, ...price} = macbook;
+    ```
+
+    활용도가 많다. 대괄호 같이 써주면, 변수를 써줄 수도 있다. 
+
+    ```js
+    const propertyName = 'title';
+    const {[propertyName]: product, ...price} = macbook;
+    ```
+
+    
+
+- **함수와 Destructuring**
+
+  아래처럼 사용이 가능하다. 잘 생각해보면 차이가 있음. 
+
+  ```js
+  function printWinners1(...args){
+    const [a, b, c, d, ...e] = args;
+    console.log(a)
+    console.log(b)
+    console.log(c)
+    console.log(d)
+    console.log(e)
+  }
+  
+  function printWinners2([a, b, c, d, ...e]){
+    console.log(a)
+    console.log(b)
+    console.log(c)
+    console.log(d)
+    console.log(e)
+  }
+  
+  printWinners1('hi','bye', 'goodbye', 'goodbye1', 'goodbye2', 'goodbye3', 'goodbye4')
+  console.log("==========")
+  const rank = ['hi','bye', 'goodbye', 'goodbye1', 'goodbye2', 'goodbye3', 'goodbye4']
+  printWinners2(rank)
+  ```
+
+  객체는 아래 같은 경우에 유용하다. 
+
+  ```js
+  function getObject(){
+    return {
+      name: "hi", 
+      birth: 1993, 
+      title: "bye"
+    }
+  }
+  
+  function printSummary(object){
+    const {name, title, birth} = object;
+    console.log(`${title}`)
+    console.log(`${name}`)
+    console.log(`${birth}`)
+  }
+  
+  printSummary(getObject())
+  ```
+
+  이런 경우, 아래처럼 바로 destructuring 문법을 사용할 수 있다. 
+
+  ```js
+  function printSummary({name, title, birth}){
+    console.log(`${title}`)
+    console.log(`${name}`)
+    console.log(`${birth}`)
+  }
+  
+  printSummary(getObject())
+  ```
+
+  이게 돔 이벤트 등에서 좋은게, 
+
+  ```js
+  btn.addEventListenr('click', ({target}) => {
+  		target.classList.toggle('checked')
+  })
+  ```
+
+  잘 안쓰긴 하는데 참고로 한번 더 분해도 된다. 
+
+  Nested Object Destructuring
+
+  ```js
+  btn.addEventListenr('click', ({target: {classList}}) => {
+  			classList.toggle('checked')
+  })
+  ```
+
+  예시 코드 
+
+  ```js
+  const music1 = { title: '난치병', singer: '하림' };
+  const music2 = { title: '너의 모든 순간', singer: '성시경' };
+  const music3 = { title: '무릎', singer: '아이유' };
+  const music4 = { title: '옛사랑', singer: '이문세' };
+  const music5 = { title: '한숨', singer: '이하이' };
+  const music6 = { title: '추억의 책장을 넘기면', singer: '이선희' };
+  
+  // function printFavoritSong(name, music){
+  //   const {title, singer} = music; 
+  //   console.log(`최근 '${name}'님이 즐겨듣는 노래는 '${singer}'의 '${title}'이라는 노래입니다.`);
+  // }
+  
+  
+  // function printFavoritSong(name, music) {
+  //   console.log(`최근 '${name}'님이 즐겨듣는 노래는 '${music.singer}'의 '${music.title}'이라는 노래입니다.`);
+  // }
+  
+  
+  
+  printFavoritSong('영훈', music4);
+  printFavoritSong('동욱', music1);
+  printFavoritSong('대위', music3);
+  printFavoritSong('소원', music2);
+  printFavoritSong('우재', music5);
+  printFavoritSong('영준', music6);
+  ```
+
+
+
+
+
+## 에러와 에러 객체
+
+- 에러객체는 기본적으로 `name`과 `message`를 담고 있다. 
+
+  - `reference`, `type`, `syntax` 에러 세 가지를 보통 볼 수 있다. 
+
+  - [에러객체의 종류](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Error)
+
+- 에러 객체를 의도적으로 만들어 낼 수도 있다. 
+
+  ```js
+  const error = new TypeError('타입 에러가 발생하였습니다')
+  console.log(error.name) // TypeError
+  console.log(error.message) // 타입 에러가 발생하였습니다
+  ```
+
+- 에러 발생시키기, 
+
+  ```js
+  // 에러를 발생시키기
+  throw error;
+  ```
+
+
+
+#### Try Catch 문
+
+- ```js
+  try { 
+    // 코드
+  } catch(error){
+    console.log(error.name)
+    console.log(error.message)
+  }
+  ```
+
+- try에서 에러 발생한 시점 이후부터는 실행되지 않는다. 
+
+  - catch에 써있는 error는 무슨 의미냐면
+
+    - 실제 발생한 에러가 error라는 `argument`로 전달된다. 
+
+    - 이거 더 잘 출력하고 싶을때는, 아래처럼 출력하면 우리가 브라우져에서 보던 그 모습으로 에러가 출력된다. 
+
+      ```js
+      console.error(e)
+      ```
+
+  #### try .. catch문 활용하기
+
+  - ```js
+    
+    
+    function printMembers(members){
+      for (const member of members){
+        console.log(member);
+      }
+    }
+    
+    
+    const teamA = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
+    const teamB = ['e', 'f', 'g', 'h']
+    const teamC = {'name': "Sanghyuk"}
+    
+    printMembers(teamA)
+    printMembers(teamB)
+    printMembers(teamC)
+    
+    ```
+
+  - 객체는 fot of가 사용이 안되서 당연히 에러가 난다. 
+
+    - 이런 경우 try, catch를 쓰라는 것. 
+    - 근데 중요한건, try, catch문 도 중괄호로 이루어져 있다. 
+      - 그 안에서 let, const처럼 block scope 갖는 변수 사용하면, 당연히 그 뒤로는 사용이 안되는 것. 
+      - 애초에 syntax에러는 실행 시키지도 않는다. syntax 에러 제외 에러 핸들링 하는 것. 
+
+  - try catch는 사실 finally라는 코드 블록을 하나 더 가질 수 있습니다!
+
+    finally문은 try catch문이 끝난 다음에 최종적으로 실행될 코드를 다룰 때 활용하는데요.
+
+    # finally문
+
+    ```js
+    try {
+      // 실행할 코드
+    } catch (err) {
+      // 에러가 발상했을 때 실행할 코드
+    } finally {
+      // 항상 실행할 코드
+    }
+    ```
+
+    try문에서 에러가 발생하지 않는다면 try문의 코드가 모두 실행된 다음에, try문에서 에러가 발생한다면 catch문의 코드가 모두 실행된 다음 실행할 코드를 finally문에 작성하면 됩니다.
+
+    다시 말해 **try문에서 어떤 코드를 실행할 때 에러 여부와 상관 없이 항상 실행할 코드를 작성**하는 것이죠!
+
+    ```js
+    function printMembers(...members) {
+      for (const member of members) {
+        console.log(member);
+      }
+    }
+    
+    try {
+      printMembers('영훈', '윤수', '동욱');
+    } catch (err) {
+      alert('에러가 발생했습니다!');
+      console.error(err);
+    } finally {
+      const end = new Date();
+      const msg = `코드 실행을 완료한 시각은 ${end.toLocaleString()}입니다.`;
+      console.log(msg);
+    }
+    ```
+
+    위 코드 처럼 에러 유무와 관계없이 코드 실행 시각을 알고 싶을 때 활용할 수도 있겠죠?
+
+    # finally문에서의 에러 처리는?
+
+    참고로 finally문에서 에러가 발생할 경우에는 다시 그 위에 있는 catch문으로 넘어가진 않습니다. 만약 finally문에서도 에러 처리가 필요한 경우에는 아래 처럼 try catch문을 중첩해서 활용하는 방법이 있는데요. 이런 부분도 잘 참고해 두셨다가 필요한 상황에 맞게 응용해 보세요!
+
+    ```js
+    try {
+      try {
+        // 실행할 코드
+      } catch (err) {
+        // 에러가 발상했을 때 실행할 코드
+      } finally {
+        // 항상 실행할 코드
+      }
+    } catch (err) {
+      // finall문에서 에러가 발생했을 때 실행할 코드
+    }
+    ```
+
+
+
+
+
+
+
+
+
+# 자바스크립트의 유용한 내부 기능
+
+- loop
+
+  - 지금까지 계속 쓰던, `for of`
+
+    ```js
+    const members =['sh', 'my', 'ys', 'mj']
+    
+    for (let member of members) { 
+        console.log(`${member}님이 입장하셨습니다.`)
+    }
+    ```
+
+  - for each와 map을 많이 쓴다.
+
+    - **For each** : callback함수를 넣으주면, argument로 배열의 요소들이 하나씩 들어온다. 
+
+      ```js
+      members.forEach(function(member) {
+        console.log(`${member}님이 입장하셨습니다.`)
+        }
+      ```
+
+      당연히 arrow function으로 작성할 수도 있다. 
+
+      ```js
+      members.forEach(member => {
+        console.log(`${member}님이 입장하셨습니다.`)
+        }
+      ```
+
+      - 두번째 파라미터를 쓰면, 요소의 index를 넣을 수도 있다. 
+
+        ```js
+        members.forEach(function(member, i) {
+            console.log(`${i}번째로 ${member}님이 입장하셨습니다.`)
+            }
+          )
+        ```
+
+      - 세번째는, 배열 자체가 전달된다. 
+
+        ```js
+        members.forEach(function(member, i, arr) {
+            console.log(`${i}번째로 ${member}님이 입장하셨습니다.`)
+            }
+          )
+        ```
+
+        `arr`에는 `members`자체가 계속 전달된다. 
+
+    - map은 for_each와 동작이 거의 비슷하다. 위 foreach를 map으로 그대로 바꿔도 실행이 된다. **근데, map의 차이점은 메소드의 호출 결과로 새로운 배열을 리턴한다는 것.**  forEach는 리턴값이 없다. 
+
+      ```js
+      members.map(function(member) {
+        console.log(`${member}님이 입장하셨습니다.`)
+        }
+      )
+      ```
+
+      ```js
+      const newArr = members.map(function(member, i, arr) {
+          return `${i}번째로 ${member}님이 입장하셨습니다.`
+          }
+        )
+      
+      console.log(newArr)
+      ```
+
+    - ***근데, foreach와 map둘다 마찬가지인게, 중간에 요소가 추가된다고 해서 계속해서 무한루프가 되는게 아님. 중간에 요소를 계속 push 한다고 하더라도, 딱 처음에 그만큼만 실행됨. 그런데, 줄어들면? 그 줄어든만큼만 실행된다.*** 
+
+      예시코드 
+
+      ```js
+      const list = document.querySelector('.list');
+      const data = [{
+          title: '자바스크립트 공부하기',
+          isClear: true,
+        }, {
+          title: '쓰레기 분리수거',
+          isClear: false,
+        }, {
+          title: '고양이 밥주기',
+          isClear: true,
+        }, {
+          title: '독서하기',
+          isClear: false,
+        }, {
+          title: '영어 공부하기',
+          isClear: false,
+        }
+      ];
+      
+      // 여기에 코드를 작성해 주세요.
+      data.forEach((todo, i) => { // 1번 조건
+        const li = document.createElement('li'); // 2번 조건
+        
+        if (todo.isClear) {
+          li.classList.add('item', 'done'); // 4번 조건
+        } else {
+          li.classList.add('item'); // 3번 조건
+        }
+      
+        li.textContent = `${i + 1}. ${todo.title}`; // 5번 조건
+        list.appendChild(li); // 6번 조건
+      });
+      ```
+
+      
+
+      
+
+      
+
+      ### Filter and Find
+
+      - Filter, 리턴으로 true 혹은 false의 조건이 될 수 있는 값을 주면 된다. True인 놈만 모아주는 것. 
+
+        ```js
+        const devices = [
+          {name : 'Galaxy', brand: 'Samsung'}, 
+          {name : 'OPPO', brand: 'Hwawei'}, 
+          {name : 'Galaxy', brand: 'OPPO'}, 
+          {name : 'Galaxy', brand: 'APPLE'}, 
+          {name : 'Galaxy', brand: 'HTC'}, 
+          {name : 'Galaxy', brand: 'MOTOLORA'}
+        ]
+        
+        
+        
+        const apples = devices.filter((el) => el.brand === 'APPLE')
+        console.log(apples)
+        ```
+
+        항상 리턴값이 배열이다. 하나만 딱 가지고 가고 싶어도, 결과는 배열이 된다. 
+
+        ```js
+        [...apples]
+        ```
+
+      - FIND는 그냥 딱 찾고 싶을때 그거 => 제일 먼저 걸리는 놈 하나만 딱 가져다 준다. 정확히는 딱 한놈 찾는 순간 반복이 종료되는 것. 
+
+        ```js
+        const devices = [
+          {name : 'Galaxy', brand: 'Samsung'}, 
+          {name : 'OPPO', brand: 'Hwawei'}, 
+          {name : 'Galaxy', brand: 'OPPO'}, 
+          {name : 'Galaxy', brand: 'APPLE'}, 
+          {name : 'Galaxy', brand: 'HTC'}, 
+          {name : 'HI', brand: 'APPLE'}
+        ]
+        
+        
+        
+        const apples = devices.find((el) => el.brand === 'APPLE')
+        console.log(apples)
+        ```
+
+        참고로 존재하지 않는 놈 찾으려고 하면, `undefined`가 된다. 
+
+## Some과 Every
+
+- `some` : 조건을 만족하는 요소가 1개 이상 있는지, `every` : 모든 요소가 조건을 만족하는지
+
+  - some은 조건 만족하는 요소 딱 찾으면,  loop 종료
+  - every는 조건 만족하지 않는거 찾는 순간 loop 종료
+
+  ```js
+  
+  const numbers = [1, 2, 3, 4, 5, 6, 7]
+  
+  const someReturn = numbers.some((el) => el > 5)
+  
+  const everyReturn = numbers.every((el) => el > 5)
+  
+  console.log(someReturn)
+  console.log(everyReturn)
+  ```
+
+- 만약 빈 배열을 입력하면, 콜백 상관 없이 `some`은 `false`, `every`는 `true`로 간다. 
+
+  예시 코드 
+
+  ```js
+  function checkSpy(team) {
+    // 여기에 코드를 작성해 주세요.
+    const result = team.members.some((member) => member !== '스파이');
+    const message = result
+      ? `[주의!] 팀 ${team.codeName} 에 이중 스파이가 있습니다!`
+      : `팀 ${team.codeName} 에는 이중 스파이가 없습니다.`;
+  
+    console.log(message);
+  }
+  ```
+
+  
+
+## Reduce
+
+- reduce는 조금 특이하니깐 잘 알아두자. 
+
+  `el, i, arr` -> 얘네는 이전에 살펴본 애들과 다 동일. 요소, 인덱스, 전체 배열
+
+  맨 첫번째 `acc` 부분이 accumulator로 조금 특별하다. 
+
+  ```js
+  const numbers = [1, 2, 3, 4]
+  
+  numbers.reduce((acc, el, i, arr) => {
+    return nextAccValue;
+  }, initialAccValue)
+  ```
+
+  `acc`는 직전의 루프가 리턴한 값을 가지고 오는 값이다. 
+
+  즉, reduce의 return뒤에는 다음 루프로 전달할 놈을 적는 것. 그러다가, 마지막 루프때 리턴되는 애가 이 reduce의 최종 리턴값이 되는 것. 
+
+  그런데, 이대로라면, 맨 처음놈은 acc에 전달받을게 없잖아. 그걸 ,` initialAccValue`부분에 써놓는 것. 
+
+  ```js
+  
+  
+  const numbers = [1, 2, 3, 4]
+  
+  const sumAll = numbers.reduce((acc, el, i) => {
+    console.log(`${i}번 index의 요소로 콜백함수가 동작중입니다.`)
+    console.log('acc: ', acc)
+    console.log('el: ', el)
+    return acc+el
+  }, 0)
+  
+  console.log(sumAll)
+  ```
+
+  default acc, 0 을 생략하면, 그냥 배열의 0번 인덱스 값이 첫번째의 acc로 전달된다. 그런데, 0번 인덱스를 그냥 넘어가버리네. 첫번째 루프를 넘어버리는 거야. 
+
+
+
+
+
+### Sort, Reverse
+
+# sort 메소드
+
+배열에서 `sort`라는 메소드를 활용하면 배열을 정렬할 수 있습니다. `sort` 메소드에 아무런 아규먼트도 전달하지 않을 때는 기본적으로 [유니코드](https://ko.wikipedia.org/wiki/유니코드)에 정의된 문자열 순서에 따라 정렬됩니다.
+
+```js
+const letters = ['D', 'C', 'E', 'B', 'A'];
+const numbers = [1, 10, 4, 21, 36000];
+
+letters.sort();
+numbers.sort();
+
+console.log(letters); // (5) ["A", "B", "C", "D", "E"]
+console.log(numbers); // (5) [1, 10, 21, 36000, 4]
+```
+
+그렇기 때문에 `numbers`에 `sort` 메소드를 사용한 것 처럼, 숫자를 정렬할 때는 우리가 상식적으로 이해하는 오름차순이나 내림차순 정렬이 되지 않습니다.
+
+그럴 땐 `sort` 메소드에 다음과 같은 콜백함수를 아규먼트로 작성해주면 되는데요.
+
+> ```
+> 이 함수는 두 개의 배열 element를 파라미터로 입력 받습니다.
+> 이 함수가 a, b 두개의 element를 파라미터로 입력받을 경우,
+> 이 함수가 리턴하는 값이 0보다 작을 경우, a가 b보다 앞에 오도록 정렬하고,
+> 이 함수가 리턴하는 값이 0보다 클 경우, b가 a보다 앞에 오도록 정렬합니다.
+> 만약 0을 리턴하면, a와 b의 순서를 변경하지 않습니다.
+> ```
+>
+> 출처: https://hianna.tistory.com/409 [어제 오늘 내일:티스토리]
+
+```js
+const numbers = [1, 10, 4, 21, 36000];
+
+// 오름차순 정렬
+numbers.sort((a, b) => a - b);
+console.log(numbers); // (5) [1, 4, 10, 21, 36000]
+
+// 내림차순 정렬
+numbers.sort((a, b) => b - a);
+console.log(numbers); // (5) [36000, 21, 10, 4, 1]
+```
+
+`sort` 메소드를 사용할 때 한 가지 주의해야될 부분은 **메소드를 실행하는 원본 배열의 요소들을 정렬**한다는 점입니다. 그래서 한 번 정렬하고 나면 정렬하기 전의 순서로 다시 되돌릴 수 없으니, 그런 경우에는 미리 다른 변수에 복사해두는 것이 좋겠죠!?
+
+# reverse 메소드
+
+`reverse` 메소드는 말 그대로 배열의 순서를 뒤집어 주는 메소드 입니다. `reverse` 메소드는 별도의 파라미터가 존재하지 않기 때문에 단순이 메소드를 호출해주기만 하면 배열의 순서가 뒤집히는데요. `sort` 메소드와 마찬가지로 **원본 배열의 요소들을 뒤집어 버린다**는 점은 꼭 주의헤야 합니다.
+
+```js
+const letters = ['a', 'c', 'b'];
+const numbers = [421, 721, 353];
+
+letters.reverse();
+numbers.reverse();
+
+console.log(letters); // (3) ["b", "c", "a"]
+console.log(numbers); // (3) [353, 721, 421]
+```
+
+
+
+
+
+# Map과 Set
+
+객체는 property name을 통해 이름이 있는 여러 값들을 묶을 때 활용할 수 있고, 배열은 index를 통해 순서가 있는 여러 값들을 묶을 때 유용하게 활용할 수 있습니다.
+
+그런데 ES2015에서 객체와 비슷한 Map과 배열과 비슷한 Set이라는 데이터 구조가 새롭게 등장했는데요. 각각 어떤 특징들을 가지고 있는지 간단하게 살펴보도록 합시다.
+
+# Map
+
+Map은 이름이 있는 데이터를 저장한다는 점에서 객체와 비슷합니다. 하지만, 할당연산자를 통해 값을 추가하고 점 표기법이나 대괄호 표기법으로 접근하는 일반 객체와 다르게  Map은 메소드를 통해서 값을 추가하거나 접근할 수 있는데요.
+
+new 키워드를 통해서 Map을 만들 수 있고 아래와 같은 메소드를 통해 Map 안의 여러 값들을 다룰 수 있습니다.
+
+- map.set(key, value): key를 이용해 value를 추가하는 메소드.
+- map.get(key): key에 해당하는 값을 얻는 메소드. key가 존재하지 않으면 undefined를 반환.
+- map.has(key): key가 존재하면 true, 존재하지 않으면 false를 반환하는 메소드.
+- map.delete(key): key에 해당하는 값을 삭제하는 메소드.
+- map.clear(): Map 안의 모든 요소를 제거하는 메소드.
+- map.size: 요소의 개수를 반환하는 프로퍼티. (메소드가 아닌 점 주의! 배열의 length 프로퍼티와 같은 역할)
+
+```js
+// Map 생성
+const codeit = new Map();
+
+// set 메소드
+codeit.set('title', '문자열 key');
+codeit.set(2017, '숫자형 key');
+codeit.set(true, '불린형 key');
+
+// get 메소드
+console.log(codeit.get(2017)); // 숫자형 key
+console.log(codeit.get(true)); // 불린형 key
+console.log(codeit.get('title')); // 문자열 key
+
+// has 메소드
+console.log(codeit.has('title')); // true
+console.log(codeit.has('name')); // false
+
+// size 프로퍼티
+console.log(codeit.size); // 3
+
+// delete 메소드
+codeit.delete(true);
+console.log(codeit.get(true)); // undefined
+console.log(codeit.size); // 2
+
+// clear 메소드
+codeit.clear();
+console.log(codeit.get(2017)); // undefined
+console.log(codeit.size); // 0
+```
+
+문자열과 심볼 값만 key(프로퍼티 네임)로 사용할 수 있는 일반 객체와는 다르게 Map 객체는 메소드를 통해 값을 다루기 때문에, 다양한 자료형을 key로 활용할 수 있다는 장점이 있습니다.
+
+# Set
+
+Set은 여러 개의 값을 **순서대로 저장한다는 점에서 배열과 비슷합니다.** 하지만, 배열의 메소드는 활용할 수 없고 Map과 비슷하게 Set만의 메소드를 통해서 값을 다루는 특징이 있는데요.
+
+Map과 마찬가지로 `new` 키워드로 Set을 만들 수 있고 아래와 같은 메소드를 통해 Set 안의 여러 값들을 다룰 수 있습니다.
+
+- set.add(value): 값을 추가하는 메소드. (메소드를 호출한 자리에는 추가된 값을 가진 Set 자신을 반환.)
+- set.has(value): Set 안에 값이 존재하면 `true`, 아니면 `false`를 반환하는 메소드.
+- set.delete(value): 값을 제거하는 메소드. (메소드를 호출한 자리에는 셋 내에 값이 있어서 제거에 성공하면 true, 아니면 false를 반환.)
+- set.clear(): Set 안의 모든 요소를 제거하는 메소드.
+- set.size: 요소의 개수를 반환하는 프로퍼티. (메소드가 아닌 점 주의! 배열의 length 프로퍼티와 같은 역할)
+
+```js
+// Set 생성
+const members = new Set();
+
+// add 메소드
+members.add('영훈'); // Set(1) {"영훈"}
+members.add('윤수'); // Set(2) {"영훈", "윤수"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+
+// has 메소드
+console.log(members.has('동욱')); // true
+console.log(members.has('현승')); // false
+
+// size 프로퍼티
+console.log(members.size); // 4
+
+// delete 메소드
+members.delete('종훈'); // false
+console.log(members.size); // 4
+members.delete('태호'); // true
+console.log(members.size); // 3
+
+// clear 메소드
+members.clear();
+console.log(members.size); // 0
+```
+
+한가지 특이한 점은 일반 객체는 프로퍼티 네임으로, Map은 `get`메소드로, 그리고 배열은 index를 통해서 개별 값에 접근할 수 있었는데요. 한 가지 특이한 점은 Set에는 개별 값에 바로 접근하는 방법이 없다는 점입니다.
+
+```js
+// Set 생성
+const members = new Set();
+
+// add 메소드
+members.add('영훈'); // Set(1) {"영훈"}
+members.add('윤수'); // Set(2) {"영훈", "윤수"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+
+for (const member of members) {
+  console.log(member); // 영훈, 윤수, 동욱, 태호가 순서대로 한 줄 씩 콘솔에 출력됨.
+}
+```
+
+그래서 위 코드와 같이 반복문을 통해서 전체요소를 한꺼번에 다룰 때 반복되는 그 순간에 개별적으로 접근할 수가 있습니다. 그런데, 이런 특징을 가지고도 Set이 유용하게 사용되는 경우가 있는데요. 바로, **중복을 허용하지 않는 값들을 모을 때**입니다.
+
+**Set은 중복되는 값을 허용하지 않는 독특한 특징이 있는데요.**
+
+```js
+// Set 생성
+const members = new Set();
+
+// add 메소드
+members.add('영훈'); // Set(1) {"영훈"}
+members.add('윤수'); // Set(2) {"영훈", "윤수"}
+members.add('영훈'); // Set(2) {"영훈", "윤수"}
+members.add('영훈'); // Set(2) {"영훈", "윤수"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('동욱'); // Set(3) {"영훈", "윤수", "동욱"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+members.add('동욱'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+members.add('태호'); // Set(4) {"영훈", "윤수", "동욱", "태호"}
+```
+
+최초에 추가된 순서를 유지하면서, 나중에 중복된 값을 추가하려고 하면 그 값은 무시하는 특징이 있습니다.
+
+처음 Set을 생성할 때 아규먼트로 배열을 전달할 수도 있는데요. 이런 특징을 활용해서 배열 내에서 중복을 제거한 값들의 묶음을 만들 때 Set을 활용하기도 합니다.
+
+```js
+const numbers = [1, 3, 4, 3, 3, 3, 2, 1, 1, 1, 5, 5, 3, 2, 1, 4];
+const uniqNumbers = new Set(numbers);
+
+console.log(uniqNumbers); // Set(5) {1, 3, 4, 2, 5}
+```
