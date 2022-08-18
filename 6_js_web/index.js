@@ -1,10 +1,18 @@
-fetch('https://jsonplaceholder.typicode.com/users')
+// fetch('https://learn.codeit.kr/api/members')
+//   .then((response) => response.text())
+//   .then((result) => { console.log(result)}
+//     ); 
+
+const member = {
+  name : 'Noel', 
+  email : 'my@example.com', 
+  department : 'marketing'
+}; 
+
+fetch('https://learn.codeit.kr/api/members/6', {
+  method : 'DELETE', 
+  body : JSON.stringify(member)
+})
   .then((response) => response.text())
-  .then((result) => { 
-    const users = JSON.parse(result)
-    console.log(users.length);
-    users.forEach((user) => {
-      console.log(user.name)
-    })
-      }
+  .then((result) => { console.log(result)}
     ); 
