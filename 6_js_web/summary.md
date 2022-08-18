@@ -298,3 +298,171 @@ img 태그의 src 속성에 적힌 URL로 다시 리퀘스트를 보내서 examp
 이렇게 Google 로고 이미지를 받기 위해 추가적인 리퀘스트를 보내고, 이 이미지를 받아온 것을 확인할 수 있습니다.
 
 이렇게 우리가 **웹 브라우저로 특정 페이지에 접속할 때, 보통 한 번 이상의 리퀘스트-리스폰스가 오고간다는 사실**, 잘 기억하세요.
+
+
+
+
+
+
+
+# JSON이란?
+
+HTML이 들어있는 `response`말고 어떤 정보가 들어있는 response도 있다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { console.log(result); });
+```
+
+여기로 보내보자. 그러면, JSON이라는 형태가 온다. 앞에서 했던 것은, 브라우져가 화면을 그리기 위한 재료들이 왔었고, 이번에는 순수하게 정보를 담고 있는 것들이 왔다. 
+
+**JSON**: **J**ava**S**cript **O**bject **N**otation. 정보 교환하기 위한 포맷을 자바스크립트의 문법을 빌려서 만든 것. 
+
+위 결과 보면 자바스크립트에서 객체를 나타내는 방식과 동일하고, 그 객체들을 배열에 담아 준다. 
+
+구체적으로 알아보기 : [링크](https://www.json.org/json-en.html)
+
+사실 자바스크립트와, JSON이 완벽히 동일한 것은 아니다. 차이점을 보자. 
+
+ 이 두 가지가 비슷하기는 하지만 완벽하게 **동일한 것은 아닙니다.** 아래에서 둘 사이의 차이점에 대해 알아봅시다.
+
+**1. JSON에는 프로퍼티의 이름과 값을 표현하는 방식에 제한이 있습니다.**
+
+### (1) JSON에서는 각 프로퍼티의 이름을 반드시 큰따옴표(")로 감싸줘야 합니다.
+
+잠깐 자바스크립트 코드로 member라는 객체를 생성해볼까요?
+
+```jsx
+const member = {
+  name: 'Michael Kim',
+  height: 180,
+  weight: 70,
+  hobbies: ['Basketball', 'Listening to music']
+};
+```
+
+자바스크립트에는 객체를 생성할 수 있는 여러 가지 방법이 있는데요. 그중 한 가지는 이런 식으로 중괄호('{ }') 안에 객체의 프로퍼티의 이름(키)과 값(밸류)쌍을 순서대로 나열해서 생성하는 방법입니다. 지금 보이는 표기를 **Object Literal**이라고 하는데요. Object Literal을 쓸 때는 문법에 약간의 유연함이 있습니다. 저는 지금 member 객체의 각 프로퍼티의 이름인 name, height, weight, hobbies에 큰따옴표를 붙이지 않았는데요. Object Literal에서는 이렇게 프로퍼티의 이름에 큰따옴표를 붙이지 않아도 되고,
+
+```jsx
+const member = {
+  "name": 'Michael Kim',
+  "height": 180,
+  "weight": 70,
+  "hobbies": ['Basketball', 'Listening to music']
+};
+```
+
+이렇게 큰따옴표를 붙여도 됩니다.
+
+**하지만 JSON의 경우에는** 프로퍼티의 이름에 반드시 큰따옴표를 붙여줘야만 합니다.
+
+```jsx
+{
+   "name":"Michael Kim",
+   "height":180,
+   "weight":70,
+   "hobbies":["Basketball", "Listening to music"]
+}
+```
+
+지금 각 프로퍼티의 이름이 모두 큰따옴표로 둘러싸여 있죠? 이렇게 JSON에서는 각 프로퍼티의 이름을 반드시 큰따옴표로 감싸주어야 합니다. 큰따옴표로 감싸주지 않으면 JSON을 처리하려고 할 때 에러가 납니다.
+
+### (2) JSON에서는 값이 문자열인 경우 큰따옴표(")를 사용해야 합니다.
+
+```jsx
+const member = {
+  "name": 'Michael Kim',
+  "height": 180,
+  "weight": 70,
+  "hobbies": ['Basketball', 'Listening to music']
+};
+```
+
+잠깐 member 객체를 다시 볼게요. 지금 name 프로퍼티의 값으로 'Michael Kim'이라는 문자열이 들어가 있죠? 자바스크립트에서는 문자열을 나타낼 때, 이렇게 작은따옴표(')를 써도 되고, 큰따옴표(")를 써서 "Michael Kim"이라고 써도 됩니다.
+
+하지만 JSON에서는 문자열 값을
+
+```jsx
+{
+   "name":"Michael Kim",
+   "height":180,
+   "weight":70,
+   "hobbies":["Basketball", "Listening to music"]
+}
+```
+
+지금 보이는 "Michael Kim", "Basketball", "Listening to music"처럼 항상 **큰따옴표**로 감싸서 적어줘야만 합니다.
+
+**2. JSON에서는 표현할 수 없는 값들이 있습니다.**
+
+자바스크립트에서는 프로퍼티의 값으로 사용할 수 있는 undefined, NaN, Infinity 등을 JSON에서는 사용할 수 없습니다. 참고로, JSON은 비록 자바스크립트로부터 비롯된 데이터 포맷이지만, 그 탄생 목적은 언어나 환경에 종속되지 않고, 언제 어디서든 사용할 수 있는 데이터 포맷이 되는 것이었습니다. 따라서 자바스크립트의 문법에서만 유효한 개념을 JSON에서는 나타낼 수 없다는 것은 어찌 보면 당연한 결과입니다.
+
+**3. JSON에는 주석을 추가할 수 없습니다.**
+
+JSON은 코드가 아니라 데이터 포맷이기 때문에 그 안에 주석을 포함시킬 수 없습니다. 
+ 자, 이때까지 자바스크립트의 문법과 JSON 문법 간의 미세한 차이를 배워봤는데요. 이 둘은 일반적으로 호환되는 것이 맞지만, 위에서 살펴본 세부적인 차이가 있다는 점을 알아두는 게 좋습니다. 이런 차이가 있다는 것을 모르면, 나중에 실무에서 JSON 데이터를 처리하다가 에러가 생겨도, 그 이유를 이해할 수 없기 때문입니다.
+
+자바스크립트 문법과 JSON 문법 간의 차이가 더 궁금한 분들은 [이 링크](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON)를 참조하세요.
+
+
+
+### JSON 데이터를 객체로 변환하기
+
+그런데, typeof를 찍어보니깐, string으로 나온다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { console.log(typeof result); });
+```
+
+결과 : **string**
+
+이 json자체가 string타입이다? 그러면, 뭐 루프돌고 이런것도 아니는 거네. 이 통으로 문자열이라는 거잖아. 
+
+string type의 json객체는 그대로, javascript 객체로 **변환**이 가능하다.  
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { 
+    const users = JSON.parse(result)
+    console.log(users.length);
+    users.forEach((user) => {
+      console.log(user.name)
+    })
+      }
+    ); 
+
+// 이렇게 하니깐, 실제로 user.name이 출력된다. 
+```
+
+
+
+### 메소드의 의미
+
+지금까지는 데이터를 받아오기 위한 Request를 보냈다. 그러나, 다른 성격의 리퀘스트도 존재함. 
+
+뭔가 데이터를 추가해 달라거나, 그런 요청도 있을 수 있음. 
+
+리퀘스트는 서버에 어떤 처리를 요구하느냐에 따라 크게 4가지 종류가 있음. 리퀘스트에 존재하는 Method라는 것을 보고 무슨 리퀘스트인지 알 수 있다. 
+
+![request](./images/request.png)
+
+![request](./images/request2.png)
+
+결국 각각의 메소드에 대해서 서버는 보통 그에 맞는 데이터 관련 조작을 하겠죠? 만약 서버가 데이터베이스를 사용한다면 **CRUD** 작업을 하게 될 겁니다.  CRUD란 **Create-Read-Update-Delete**의 약자로 데이터베이스 관점에서 데이터에 관한 처리를 나타낸 합성어인데요.  각 메소드는 각 데이터 관련 작업에 이렇게 대응됩니다.
+
+| 메소드 | 데이터 처리 |
+| ------ | ----------- |
+| GET    | READ        |
+| POST   | CREATE      |
+| PUT    | UPDATE      |
+| DELETE | DELETE      |
+
+
+
+#### Request와 Head와 Body
+
+하나의 리퀘스트는 Head와 Body부분으로 이루어져 있다. 

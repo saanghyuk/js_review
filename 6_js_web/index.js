@@ -1,3 +1,10 @@
-fetch('https://www.google.com')
+fetch('https://jsonplaceholder.typicode.com/users')
   .then((response) => response.text())
-  .then((result) => {console.log(result)})
+  .then((result) => { 
+    const users = JSON.parse(result)
+    console.log(users.length);
+    users.forEach((user) => {
+      console.log(user.name)
+    })
+      }
+    ); 
