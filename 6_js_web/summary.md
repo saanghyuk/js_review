@@ -2,7 +2,7 @@
 
 웹 브라우져와 서버 사이 일어나는 통신에 대한 토픽
 
-
+[비동기 실행과 Promise 객체](#비동기 실행과 Promise 객체)
 
 ### Fetch 사용해보기
 
@@ -1584,3 +1584,736 @@ PATCH 메소드는 기존의 데이터를 수정할 때 사용하는 메소드�
 
 
 
+# 비동기 실행과 Promise 객체
+
+아래 코드를 봐보자. 
+
+```js
+
+console.log('Start')
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => {console.log(result)})
+
+console.log('End')
+```
+
+Start - response 내용 - End가 출력되야 되잖아. 
+
+근데 해보면, 그게 아님. `Start - End - response 내용` 이 출력됨. 
+
+**왜 이럴까?**
+
+Fetch함수의 비동기 실행 때문. 
+
+위 코드에서 먼저 
+
+1.  Start 출력 
+2. fetch함수가 request보낸다. 
+   - then으로 Callback이 등록되어 있다. 이 `Callback` 이라는 것은 서버로부터 response를 받았을 때 실행된다. 
+   - 두번째, then도 첫번째 콜백이 실행되고 나면 그 다음에 실행된다. 첫번째 콜백의 리턴값을 넘겨받게 된다. 
+   - 중요한 점은 `then`은 callback을 단지 등록만 한다. 실행하는 것이 아니다. 
+3. 그래서, `then` 메소드가 콜백을 등록하고 나면, 그 다음 console.log('End')가 실행된다. 
+4. 그 후에, `response`가 도착하고 나면, 서버에 등록해 두었던 `then` 메소드가 실행되게 된다. 
+
+**이처럼 한번 실행된 작업이 완료되기 전에, 다음 실행으로 넘어가고 나중에 콜백이 실행되므로써 작업이 마무리 되는 것을 비동기 실행이라고 한다.** Fetch함수가 리턴하는 객체가 이 비동기실행과 관련이 있고, 이 객체를 Promise 객체라고 한다.  
+
+
+
+코드를 다시 보겠습니다.
+
+```jsx
+console.log('Start!');
+
+fetch('https://www.google.com')
+  .then((response) => response.text())
+  .then((result) => { console.log(result); });
+
+console.log('End'); 
+```
+
+지금 이 코드에는 다음과 같은 2개의 콜백이 있습니다.
+
+(1) **(response) ⇒ response.text()** (2) **(result) ⇒ { console.log(result); }**
+
+fetch 함수가 리퀘스트를 보내고, 서버의 리스폰스를 받게 되면 그때서야 이 콜백들이 순서대로 실행되는데요.
+
+이 사실을 바탕으로, 전체 코드의 실행 순서를 다시 정리하자면
+
+1. console.log('Start');
+2. fetch 함수(리퀘스트 보내기 및 콜백 등록)
+3. console.log('End');
+4. 리스폰스가 오면 2. 에서 then 메소드로 등록해뒀던 콜백 실행
+
+이렇게 됩니다. 이렇게 특정 작업을 시작(리퀘스트 보내기)하고 완벽하게 다 처리(리스폰스를 받아서 처리)하기 전에, 실행 흐름이 바로 다음 코드로 넘어가고, 나중에 콜백이 실행되는 것을 **'비동기 실행'**이라고 합니다. *이에 반해 한번 시작한 작업은 다 처리하고 나서야, 다음 코드로 넘어가는, 우리에게 익숙한 방식의 실행은 **'동기 실행'**이라고 하는데요.* 만약 이 코드에서 fetch 함수가 비동기 실행되지 않고, 동기 실행되는 함수였다고 **가정**한다면 실행 흐름이 어떻게 됐을까요? 이렇게 됐을 겁니다.
+
+1. console.log('Start');
+2. fetch 함수(리퀘스트 보내기)
+3. 리스폰스가 올 때까지 코드 실행이 잠시 '**정지**'되고, 리스폰스가 오면 필요한 처리 수행
+4. console.log('End');
+
+이런 순서로 코드가 실행되었을 겁니다. 동기 실행은 한번 시작한 작업을 완료하기 전까지 코드의 실행 흐름이 절대 그 다음 코드로 넘어가지 않습니다. 일단 시작한 작업을 완벽하게 처리하고 난 다음에야 그 다음 코드로 실행 흐름이 넘어가는데요. 따라서 동기 실행의 경우 코드가 보이는 순서대로, 실행됩니다.
+
+이와 다르게 비동기 실행은 한번 작업을 시작해두고, 그 작업이 완료되기 전이더라도 콜백만 등록해두고, 코드의 실행 흐름이 바로 그 다음 코드로 넘어갑니다. 그리고 추후에 특정 조건이 만족되면 콜백이 실행됨으로써 해당 작업을 완료하는 방식이죠. 따라서 비동기 실행에서는 코드가 꼭 등장하는 순서대로 실행되는 것이 아닙니다. 그래서 코드를 해석할 때 주의해야 하는데요.
+
+그렇다면 '비동기 실행'이라는 건 왜 존재하는 걸까요? 그건 바로 보통 '비동기 실행'이 '동기 실행'에 비해, **동일한 작업을 더 빠른 시간 내에 처리**할 수 있기 때문입니다. 방금 전 fetch 함수가 '동기 실행'된다고 가정했을 때를 생각해봅시다. fetch 함수가 실행되고 리스폰스가 올 때까지 기다린다는 것은 무슨 의미일까요? 바로 리스폰스가 올 때까지는 아무런 작업도 할 수 없다는 뜻입니다. 그만큼 **시간을 낭비**하게 되는 셈이죠.
+
+하지만 만약 비동기 실행이라면 일단 리퀘스트 보내기, 콜백 등록까지만 해두고, 바로 다음 작업(`console.log('End');`)을 시작함으로써 시간을 절약할 수 있습니다. 이 설명을 도식화하면 다음과 같습니다.
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4365&directory=Untitled.png&name=Untitled.png)
+
+이미지 상단은 fetch 함수가 동기 실행된다고 **가정했을 때**의 경우,  이미지 하단은 fetch 함수가 비동기 실행되는 **실제의 모습**을
+
+의미합니다. 지금 동기 실행에서는 모든 작업이 순차적으로 수행되고 있는 게 한눈에 보이죠? 이에 비해, 비동기 실행에서는 리스폰스를 기다리는 시간 동안 그 이후의 작업을 미리 처리하고 있습니다. 그래서 비동기 실행이 최종 작업 종료 시간이 더 짧다는 것을 알 수 있습니다.(물론 실제로는 비동기 실행의 경우에는 콜백을 등록하는 시간적 비용이 존재하지만 일단은 이해를 위해서 이런 부분은 생략하고 생각합시다.)
+
+참고로, 현재 보라색 박스로 나타낸 fetch 함수 바로 다음 코드의 실행이 지금보다 더 오래 걸리는 작업이라고 가정한다면, 비동기 실행의 상대적인 작업 효율성은 더 올라갑니다. 보라색 영역이 둘 다 더 길어진다고 생각해보면 이해하실 수 있을 겁니다..
+
+자바스크립트로 웹 통신을 하는 코드를 작성하려면 이런 비동기 실행의 원리와 그 장점에 대해 잘 이해하고 있어야 합니다. 이제부터는 자바스크립트에서 비동기 실행을 다루기 위해 알아야 하는 **Promise 객체, async/await 구문 등**에 대해 배워보겠습니다. 여러분이 실무에서 일을 하기 위해서는 반드시 제대로 이해하고 가야 하는 것들이니까 집중해서 계속 배워봅시다.
+
+
+
+이전 노트에서는 fetch 함수가 비동기 실행된다는 게 무슨 의미인지, 그리고 비동기 실행이 동기 실행에 비해서 가지는 장점이 무엇인지 배워봤습니다. 사실 자바스크립트에는 fetch 함수 말고도, 비동기 실행되는 함수들이 존재합니다. 그 예시들을 하나씩 살펴보겠습니다.
+
+# 1. setTimeout 함수
+
+setTimeout 함수는, 특정 함수의 실행을 원하는 시간만큼 뒤로 미루기 위해 사용하는 함수입니다.
+
+```jsx
+console.log('a');
+setTimeout(() => { console.log('b'); }, 2000);
+console.log('c');
+```
+
+예를 들어 이런 코드가 있을 때, 지금 가운데에 있는 setTimeout 함수는 첫 번째 파라미터에 있는
+
+`() ⇒ { console.log('b'); }`,
+
+이 콜백의 실행을, 두 번째 파라미터에 적힌 2000 밀리세컨즈(=2초) 뒤로 미룹니다. 그래서 이 코드를 실행하면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4366&directory=Untitled.png&name=Untitled.png)
+
+이렇게 a와 c가 먼저 출력되고, **약 2초가 지난 후에 b가 출력**됩니다. 실제로 확인하고 싶은 분들은 직접 코드를 복사해서 개발자 도구에서 확인해보세요.
+
+fetch 함수에서는 콜백이 실행되는 조건이, '리스폰스가 도착했을 때'였다면, setTimeout에서 콜백이 실행되는 조건은, '설정한 밀리세컨즈만큼의 시간이 경과했을 때'입니다. 어쨌든 둘 다 콜백의 실행을 나중으로 미룬다는 점에서는 비슷합니다. 이 setTimeout 함수는 아주 자주 활용되는 비동기 실행 함수이고 이번 토픽에서도 앞으로 자주 사용할 거니까 꼭 기억하세요.
+
+# 2. setInterval 함수
+
+setInterval 함수는 특정 콜백을 일정한 시간 간격으로 실행하도록 등록하는 함수입니다. Interval는 '간격'이라는 뜻인데요. 바로 위에서 봤던 예시 코드에서 setTimeout 부분만 setInterval로 바꿔서 실행해보겠습니다.
+
+```jsx
+console.log('a');
+setInterval(() => { console.log('b'); }, 2000);
+console.log('c');
+```
+
+이렇게 쓰면 이제 b를 출력하는 콜백이 2초 간격으로 계속 실행됩니다. 실제로 확인해보면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4366&directory=Untitled%201.png&name=Untitled+1.png)
+
+a와 c가 출력되고, 약 2초 뒤에 b가 출력된 후 그 뒤로 계속 2초 간격으로 b가 반복 출력되는 것을 볼 수 있습니다. (현재 b 왼쪽에 쓰여 있는 5는 b가 다섯 번 출력되었음을 개발자 도구가 간단하게 나타낸 것입니다)
+
+# 3. addEventListener 메소드
+
+addEventListener 메소드는 DOM 객체의 메소드인데요, 혹시 관련된 내용을 공부하고 싶으신 분들은 '인터랙티브 자바스크립트' 토픽의 아래의 레슨들을 참고하시면 됩니다.
+
+- ['이벤트와 버튼 클릭' 레슨](https://www.codeit.kr/learn/courses/javascript-intermediate/3778)
+- ['이벤트 핸들러 등록하기' 레슨](https://www.codeit.kr/learn/courses/javascript-intermediate/3800)
+
+만약 사용자가 웹 페이지에서 어떤 버튼 등을 클릭했을 때, 실행하고 싶은 함수가 있다면
+
+(1) 해당 DOM 객체의 onclick 속성에 그 함수를 설정하거나,  (2) 해당 DOM 객체의 addEventListener 메소드의 파라미터로 전달하면 됩니다.
+
+이런 식으로 말이죠.
+
+(1) onclick 속성
+
+```jsx
+...
+
+btn.onclick = function (e) { // 해당 이벤트 객체가 파라미터 e로 넘어옵니다.
+  console.log('Hello Codeit!');
+};
+
+// 또는 arrow function 형식으로 이렇게 나타낼 수도 있습니다. 
+btn.onclick = (e) => {
+  console.log('Hello Codeit!');
+};
+
+...
+```
+
+(2) addEventListener 메소드
+
+```jsx
+...
+
+btn.addEventListener('click', function (e) { // 해당 이벤트 객체가 파라미터 e로 넘어옵니다.
+  console.log('Hello Codeit!');
+});
+
+// 또는 arrow function 형식으로 이렇게 나타낼 수도 있습니다.
+btn.addEventListener('click', (e) => {
+  console.log('Hello Codeit!');
+});
+
+... 
+```
+
+이렇게 클릭과 같은 특정 이벤트가 발생했을 때 **실행할 콜백을 등록하는 addEventListener 메소드도 비동기 실행과 관련이 있습니다.** 파라미터로 전달된 콜백이 당장 실행되는 것이 아니라, 나중에 특정 조건(클릭 이벤트 발생)이 만족될 때(마다) 실행되기 때문입니다.  
+ 자, 이때까지 자바스크립트의 대표적인 비동기 실행 함수들을 살펴봤는데요. 그런데 이때까지 배운 fetch 함수와 이번 노트에서 본 함수들을 보면 차이점이 있습니다. 일단 이번 노트에서 배운 함수들을 보면
+
+```jsx
+setTimeout(콜백, 시간) 
+setInterval(콜백, 시간)
+addEventListener(이벤트 이름, 콜백)
+```
+
+이런 식으로, 함수의 아규먼트로 바로 콜백을 넣습니다. 그런데 fetch 함수는 이 함수들과는 전혀 다르게 생겼습니다. 지금 보면,
+
+```jsx
+fetch('https://www.google.com')
+  .then((response) => response.text()) // fetch 함수가 리턴하는 객체의 then 메소드를 사용해서 콜백을 등록
+  .then((result) => { console.log(result); });
+```
+
+fetch 함수는 콜백을 파라미터로 바로 전달받는 게 아니라, **fetch 함수가 리턴하는 어떤 객체의 then 메소드를 사용해서 콜백을 등록**하는데요.
+
+위에서 본 함수들처럼, fetch 함수도 이런 식으로 코드를 써야할 것만 같은데.
+
+```jsx
+fetch('https://www.google.com', (response) => response.text())
+```
+
+왜 fetch 함수만 사용하는 형식이 다른 걸까요? 그건 바로 fetch 함수는, 좀 더 새로운 방식으로 비동기 실행을 지원하는 자바스크립트 문법과 연관이 있기 때문입니다. 사실 **fetch 함수는 Promise 객체라는 것을 리턴하고, 이 Promise 객체는 비동기 실행을 지원하는 또 다른 종류의 문법에 해당**하는데요. 이게 무슨 말인지 다음 영상에서 살펴봅시다.
+
+
+
+#### Fetch 함수는 Promise 객체를 리턴합니다. 
+
+fetch가 promise를 리턴한다는데, 그게 대체 뭐여? `then`은 **Promise**객체의 메소드 인 것. 
+
+```js
+console.log('Start!');
+
+fetch('https://www.google.com')
+  .then((response) => response.text())
+  .then((result) => { console.log(result); });
+
+console.log('End'); 
+```
+
+Promise객체는 작업에 관한 '**상태 정보**'를 가지고 있는 객체. 
+
+`fetch('https://www.google.com')`는 리퀘스트를 보내고 리스폰스를 받는 작업을 수행한다. 작업이 잘 될 수도 있고, 인터넷 끊기거나 하면서 실패할 수도 있다. 바로 이런 작업의 결과가 `fetch`함수가 리턴하는 Promise 객체에 저장된다. 그래서 fetch함수가 return하는 `Promise` 객체를 보면, 그 작업이 성공했는지 실패했는지를 알 수 있다. 
+
+Promise 객체는 세 가지중 하나의 상태를 갖게 된다. 
+
+![promise](./images/promise.png)
+
+그럼, 맨 처음 fetch함수가 리턴한 Promise객체는 pending 상태(작업 진행 중). 그 다음 response를 정상적으로 전달받으면, 해당 Promise객체는 fulfilled 상태가 된다. 만약, 아예 request를 못보냈거나, response를 못받았으면, rejected 상태가 되는 것. 
+
+![promise](./images/promise2.png)
+
+여기서 작업이 만약 성공해서, fulfilled 상태가 되면, **Promise**객체는 그 작업의 성공 결과도 함께 갖게 된다. 
+
+현재는 `response`가 작업의 성공 결과에 해당되는 것. 이것을 앞으로 `작업성공결과` 라고 표현할게. 
+
+![promise](./images/promise3.png)
+
+반대로 rejected가 되면, 작업 실패에 관한 정보를 갖게 된다. 이것을 `작업실패정보` 라고 부를게. 
+
+![promise](./images/promise4.png)
+
+
+
+다시 코드를 해석해 보자. 
+
+```js
+console.log('Start')
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => {console.log(result)})
+
+console.log('End')
+
+```
+
+`Promise`객체의 메서드인 `then`은 `Promise` 객체가 Pending 상태에서, Fulfilled 상태가 될 때, 실행할 콜백을 등록하는 메서드. response를 정상적으로 받았을 때, `fulfilled`가 되고, 콜백이 실행되는 것. 
+
+즉, `then` 메서드란 : `Promise`객체가 `fulfilled`상태가 되었을 때, 실행할 콜백을 등록하는 것. 
+
+그리고, `fulfilled`상태가 될 때, `Promise`객체는 작업성공결과를 갖는다고 했지. Promise결과의 작업성공 결과는 이렇게 **response**라는 파라미터로 넘어오는 것. 
+
+
+
+## Promise Chaning
+
+두번째 `then`을 봐보자. 얘도 콜백을 설정하고 있다. 첫번째 `then` 메소드에서 설정한 콜백이 실행된 후 실행된다. 여기서 중요한 사실은, `then`메소드 뒤에는 계속해서 `then` 메소드를 붙일 수 있다는 것. 
+
+Promise 객체들 계속해서 연결해 가는게, Promise Chaning. 
+
+근데, 지금, `Promise`객체는 맨 처음꺼만 Promise객체 아니야? 왜 Promise Chaning이라고 표현해?
+
+왜냐면, `then`메소드도 새로운 `Promise` 객체를 리턴하는 거거든. 애초에 당연한게, then메소드는 Promise객체의 메서드잖아. 그러면, then 메소드가 Promise 객체를 리턴 했어야, then도 사용할 수 있었던 거지.
+
+**then 메소드는 새로운 Promise 객체를 리턴한다.** -> 이 사실이 아주 중요하다. 
+
+한 가지 더 중요한 사실은, **then**메소드가 리턴한 **Promise** 객체는, 가장 처음에는 Pending 상태이다. 하지만, 나중에 then메소드로 등록한 콜백이 실행되고(아래 빨간박스) 콜백에서 어떤 값을 리턴하면, then메소드가 return했던 Promise 객체가 다시 영향을 받게 된다. 이때 콜백에서 어떤 값을 리턴하는가에 따라서, 받는 영향이 달라진다. 
+
+![promise](./images/promise5.png)
+
+크게 두가지 경우로 나눠볼 수 있다. 첫번째는 callback안에서, Promise객체를 리턴하는 경우, 두번째는 callbackd 안에서 Promise 객체가 아닌 것을 리턴하는 경우. 
+
+![promise](./images/promise6.png)
+
+1. **Callback에서 `Promise`객체를 `return`하면,** `then`메소드가 `return`했던 `Promise` 객체는 Callback이 return한 `Promise`의 결과와 동일한 상태와 결과를 갖게 된다. 
+
+   즉, callback이 return한 Promise 객체가 fulfilled가 되면, then 메소드가 return했던 Promise 객체도 fulfilled 상태가 되고, 동일한 작업성공 결과를 갖게 된다. 
+
+   ![promise](./images/promise7.png)
+
+   반대로, callback이 return한 Promise 객체가 rejected 상태가 되면, then 메소드가 return했던 Promise 객체도 똑같이 rejected 상태가 되고 동일한 작업실패정보를 갖게 된다. 
+
+   ![promise](./images/promise8.png)
+
+2. **두번째 Callback에서 Promise객체가 아닌 단순 숫자, 문자열, 일반 객체를 리턴하는 경우는?**
+
+   이 경우는 then메소드가 return했던 Promise객체는 fulfilled 상태가 되고, callback의 return값을 작업성공 결과로 갖게 된다. 
+
+   ![promise](./images/promise9.png)
+
+
+
+제대로 이해해 보자. 코드에서, fetch함수와 각각의 then메소드는 Promise 객체를 return하고, 모든 Promise 객체는 현재 Pending인 상황.  
+
+![promise](./images/promise10.png)
+
+일단 fetch함수가 return했던 Promise객체가 fulfilled 상태가 되면, 첫번째 then 메소드 안에 콜백이 실행되겠지. 이때, 콜백 안에는 response객체의 text()라는 메소드가 호출되고, 이건 사실 Promise객체를 리턴하는 메소드야. 어쨋든 이 text가 잘 실행 되잖아? 그러면, 현재 then 메소드가 return하는 Promise 객체도 fulfilled 상태로 바뀌고, 그 작업성공결과로 그 response.text()를 가지고 있겠지. 
+
+그러고 이제 두번째 then이 실행되야지. 그러면, 이번에는 콜백에서 promise객체가 아닌, 일반 문자열? 혹은 일반객체가 return된다. 그러면, 이제 두번째 then이 return하는 promise객체는 fulfilled로 변하고, 작업성공결과로 얘를 가져가게 되는 것. 	
+
+
+```jsx
+console.log('Start!');
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => {
+    const users = JSON.parse(result);
+    // ...
+  });
+
+console.log('End'); 
+```
+
+이전 챕터에서는 위 코드에서 보이는 것처럼 response 객체의 text 메소드로 리스폰스의 내용을 추출(`response.text();`)하고 이것을 Deserialize하거나(`JSON.parse(result);`)
+
+```jsx
+console.log('Start!');
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((users) => {
+    // ...
+  });
+
+console.log('End');
+```
+
+response 객체의 json 메소드로 리스폰스의 내용 추출과 Deserialize를 한 번에 수행(`response.json()`)할 수 있다는 사실을 배웠습니다.
+
+그런데 그 때 배우지 않았던 중요한 사실 하나가 있습니다. 그것은 바로 이 **text 메소드와 json 메소드가 사실은 Promise 객체를 리턴하는 메소드라는 사실입니다.** 이게 무슨 말인지 하나씩 설명해드릴게요.
+
+# 1. text 메소드
+
+fetch 함수로 리스폰스를 잘 받으면, response 객체의 **text 메소드**는, **fulfilled 상태**이면서 **리스폰스의 바디에 있는 내용을 string 타입으로 변환한 값**을 '작업 성공 결과'로 가진 Promise 객체를 리턴합니다. 문장이 조금 기니까 반복해서 읽어보세요. 이때 그 작업 성공 결과는 string 타입인데요. 이때 그 값이 만약 JSON 데이터라면 이전에 배운 것처럼 JSON 객체의 parse 메소드로 Deserialize를 해줘야합니다.(`JSON.parse(result);`)
+
+# 2. json 메소드
+
+fetch 함수로 리스폰스를 잘 받으면, response 객체의 **json 메소드**는, **fulfilled 상태**이면서, **리스폰스의 바디에 있는 JSON 데이터를 자바스크립트 객체로 Deserialize해서 생겨난 객체**를 '작업 성공 결과'로 가진 Promise 객체를 리턴합니다. 만약 리스폰스의 바디에 있는 내용이 JSON 타입이 아니라면 에러가 발생하고 Promise 객체는 rejected 상태가 되면서 그 '작업 실패 정보'를 갖게 됩니다.
+
+자, 이때까지 우리가 계속 봐온 **response 객체의 text 메소드와 json 메소드가 사실 Promise 객체를 리턴하는 메소드**였다는 사실, 놀랍죠?
+
+바로 이 내용을 이전 영상에서 배웠던 내용인 'then 메소드가 리턴했던 Promise 객체(A)는 그 콜백에서 리턴한 Promise 객체(B)와 동일한 상태와 결과를 갖게 된다'는 규칙과 연관지어서 생각해봅시다. 이 말은 곧, 콜백에서 리턴한 Promise 객체로부터 새로운 Chain이 시작된다는 말과도 같은데요.
+
+이때문에 response 객체의 text 메소드 또는 json 메소드 이후에 등장하는 then 메소드부터는 string 타입의 값이나 자바스크립트 객체를 갖고 바로 원하는 작업을 할 수 있는 겁니다. text, json 메소드가 Promise 객체를 리턴하는 메소드라는 사실, 잘 기억하세요!
+
+
+
+## Promise Chaning이 필요한 경우
+
+Promise Chaning은 비동기작업을 순차적으로 수행해야 할 때, 전체코드를 조금 떠 깔끔하게 나타내기 위해서 사용한다.
+
+아래 코드를 보면, 두번째 `then` 메소드 안에서 또 `fetch` 함수를 콜하고 있다.  
+
+0번째 사용자의 id를 구해고, 그 id를 써서 fetch로 다시 request를 보냈다. 이때, 쿼리부분에 다시 id를 넣은 것. 그러면, 1번 사용자가 작성한 글들이 나온다. 
+
+![promise](./images/promise11.png)코드를 아래처럼 바꿔도 똑같이 실행이 된다. 두번째 return에 fetch를 붙이고, 얘네들을 아예 바깥으로 뺏다. 
+
+![promise](./images/promise12.png)
+
+당연히 마찬가지로 실행이 되겠지. 두번째 then메소드는 그 안에 callback의 return 내 fetch가 리턴하는 값 Promise의 성공결과와 status를 갖게 되겠지. 
+
+이런 성질을 잘 이용해서, 가독성이 좋게 만들어 놓은 경우가 대부분이다. 
+
+**비동기 작업을 순차적으로 하기 위해, Promise Chaning을 한다.** 아무리  비동기 작업이 많더라도, 깔끔하게 코드를 작성할 수 있다. 
+
+
+
+예시)
+
+```js
+fetch('https://learn.codeit.kr/api/interviews/summer')
+  .then((response) => response.json())
+  .then((interviewResult) => {
+    const { interviewees } = interviewResult;
+    const newMembers = interviewees.filter((interviewee) => interviewee.result === 'pass');
+    return newMembers;
+  })
+  .then((newMembers) => fetch('https://learn.codeit.kr/api/members', {
+    method: 'POST',
+    body: JSON.stringify(newMembers),
+  }))
+  .then((response) => { 
+    if (response.status === 200) {
+      return fetch('https://learn.codeit.kr/api/members');
+    } else {
+      throw new Error('New members not added');
+    }
+  })
+  .then((response) => response.json())
+  .then((members) => {
+    console.log(`총 직원 수: ${members.length}`);
+    console.log(members);
+  });
+```
+
+지금 각 then 메소드 안의 콜백에서 수행되는 작업을 정리하면 다음과 같습니다.
+
+**1. 첫 번째 then 메소드 안의 콜백**
+
+response 객체의 json 메소드를 호출하여 리스폰스의 바디 부분에 있는 JSON 데이터를 Deserialize해서 생긴 객체를 작업 성공 결과로 가진 Promise 객체를 리턴합니다.
+
+**2. 두 번째 then 메소드 안의 콜백**
+
+채용 인터뷰 결과는 이렇게 생겼는데요.
+
+```jsx
+{
+  "inverviewers": [
+    "Peter",
+    "Maya",
+    "Nancy"
+  ],
+  "interviewees": [
+    {
+      "id": 1012,
+      "name": "Chris",
+      "result": "pass"
+    },
+    {
+      "id": 1030,
+      "name": "Annie",
+      "result": "fail"
+    },
+    {
+      "id": 1042,
+      "name": "Derek",
+      "result": "fail"
+    },
+    {
+      "id": 1049,
+      "name": "Vivian",
+      "result": "pass"
+    },
+    {
+      "id": 1057,
+      "name": "Henry",
+      "result": "fail"
+    },
+    {
+      "id": 1103,
+      "name": "Ellen",
+      "result": "pass"
+    }
+  ]
+}
+```
+
+이 객체가 interviewResult 파라미터로 넘어옵니다. 지금 이 객체의 interviewers 프로퍼티에는 면접관들의 이름이, interviewees 프로퍼티에는 면접 대상자들의 정보가 적혀있습니다. 일단 interviewees 프로퍼티의 배열을 가져와서, **filter 메소드를 사용**해, 각 면접 대상자 중 그 result 프로퍼티의 값이 pass(합격)인 것들만 추립니다. 이제 이 사람들이 신입 직원이 되겠죠? 이 배열을 그대로 리턴해주면 됩니다.
+
+**3. 세 번째 then 메소드 안의 콜백**
+
+이제 신입 직원들의 정보가 담긴 배열을 그대로 https://learn.codeit.kr/api/members에 POST 리퀘스트를 보내서 추가합니다. 이전에 POST 리퀘스트를 보낼 때는 객체 하나를 보내서 직원 정보 하나를 추가했지만, 이번엔 여러 직원 정보가 담긴 배열을 보내서 추가하면 됩니다. 신입 직원 배열을 그대로 Serialize해서 리퀘스트의 바디에 담아 보내면 됩니다.
+
+**4. 네 번째 then 메소드 안의 콜백**
+
+신입 직원 정보가 잘 추가되고 나면, 정말로 잘 추가되었는지를 확인해야 하는데요. 지금 여기서는 상태 코드가 200번이면 정상적으로 추가된 것으로 간주하고 이제 전체 직원의 정보를 조회합니다. response 객체의 status 프로퍼티를 사용하면 상태 코드를 확인할 수 있다는 사실, 이전에 배웠었죠?
+
+**5. 다섯 번째 then 메소드 안의 콜백**
+
+리스폰스의 바디에 있는 전체 직원 정보를 나타내는 JSON 데이터를 추출 및 Deserialize해야합니다. 이때 response 객체의 text 메소드를 쓰고, JSON 객체의 parse 메소드를 사용해도 되겠지만 이 모든 것을 한번에 response 객체의 json 메소드로 해결했습니다.
+
+**6. 여섯 번째 then 메소드 안의 콜백**
+
+신입 직원들까지 추가된 아래와 같은 올해의 전체 직원 정보를 출력합니다.
+
+```jsx
+[
+  {
+    id: 1,
+    name: 'Jason',
+    email: 'jason@codeitmall.kr',
+    department: 'engineering'
+  },
+  {
+    id: 2,
+    name: 'Alice',
+    email: 'alice@codeitmall.kr',
+    department: 'engineering'
+  },
+  {
+    id: 3,
+    name: 'Brian',
+    email: 'brian@codeitmall.kr',
+    department: 'marketing'
+  },
+  {
+    id: 4,
+    name: 'Erica',
+    email: 'erica@codeitmall.kr',
+    department: 'marketing'
+  },
+  {
+    id: 5,
+    name: 'Wilson',
+    email: 'wilson@codeitmall.kr',
+    department: 'sales'
+  },
+  { id: 6, name: 'Chris', email: null, department: null },
+  { id: 7, name: 'Vivian', email: null, department: null },
+  { id: 8, name: 'Ellen', email: null, department: null }
+]
+총 직원 수: 8
+```
+
+신입 직원들은 email 프로퍼티와 department 프로퍼티의 값이 아직 null이네요. 이메일 주소와 부서 배정을 받고나면 이 정보도 나중에 갱신해주면 되겠죠?
+
+이전 영상에서 배운 것처럼 **Promise Chaining은 여러 개의 비동기 작업을 순차적으로 처리하기 위해서 사용됩니다.** 이렇게 리퀘스트를 보내고 리스폰스를 기다렸다가 받은 리스폰스의 결과를 활용해서 다시 리퀘스트를 보내는 방식 웹 개발에서 아주 일반적인 작업 방식 중 하나입니다. Promise Chaining이 웹 개발에서 얼마나 유용할지 짐작되시죠?
+
+
+
+### Rejected 상태가 되면 실행할 콜백
+
+지금까지는, fulfilled인 상태에서 실행할 콜백만 고려했음. 그러면, `rejected` 일때는 어떻게 되는거여?
+
+![promise13](./images/promise13.png)
+
+이것도 `then`으로 할 수 있다. 
+
+잘 보면, 지금 then 뒤에 콜백이 두개가 들어가있다. 
+
+![promise13](./images/promise14.png)
+
+![promise13](./images/promise15.png)
+
+then의 두번째 파라미터로 넣어주면 된다. 여기서 주의할게, 첫번째 콜백은, 파라미터로 앞 Promise 객체의 작업성공결과가 넘어오지만, 두번째는 파라미터로 작업실패정보가 넘어온다. 당연하잖아. 
+
+실제로 인터넷 꺼보고 위 코드 실행해 본다. 
+
+
+
+Promise 객체를 배울 때는 then 메소드에 관해서만 확실히 알면 딱히 어려운 내용이 없습니다. 이번 노트에서는 Promise의 then 메소드에 관한 규칙을 제대로 깊이있게 배워봅시다.
+
+잠깐 이 코드를 보세요.
+
+```jsx
+const successCallback = function () { };
+const errorCallback = function () { };
+
+fetch('https://jsonplaceholder.typicode.com/users') // Promise-A
+  .then(successCallback, errorCallback); // Promise-B
+```
+
+이때까지 배운 내용을 바탕으로 이 코드를 해석해봅시다. 일단, 이 코드에서
+
+(1) fetch 메소드가 리턴하는 Promise 객체를 Promise-A 객체라고 하고,  (2) then 메소드가 리턴하는 Promise 객체를 Promise-B 객체라고 해봅시다.
+
+그리고 fetch 함수의 작업이 성공하는 경우와 실패하는 경우로 나누어서 생각해보겠습니다.
+
+1. fetch 함수의 작업이 성공해서 Promise-A 객체가 **fulfilled 상태**가 된 경우 : then 메소드 안의 "첫 번째" 콜백인 **successCallback**이 실행됩니다.
+2. fetch 함수의 작업이 실패해서 Promise-A 객체가 **rejected 상태**가 된 경우 : then 메소드 안의 "두 번째" 콜백인 **errorCallback**이 실행됩니다.
+
+자, 여기서 중요한 점은 **Promise-B는, 실행된 successCallback 또는 errorCallback에서 무엇을 리턴하느냐**에 따라
+
+- 그 **상태**(fulfilled or rejected)와
+- **결과**(작업 성공 결과 or 작업 실패 정보)가
+
+결정된다는 점입니다.
+
+이번 노트에서는 **then 메소드가 리턴한 Promise 객체가, 콜백이 리턴하는 값에 따라 어떻게 달라지는지** 경우를 나누어서 다뤄볼 겁니다. 이전 영상에서 배운 내용도 있고, 새롭게 배우는 내용도 있으니까 집중해서 잘 읽어보세요.
+
+# 1. 실행된 콜백이 어떤 값을 리턴하는 경우
+
+successCallback이 실행되든, errorCallback이 실행되든, 실행된 콜백에서 어떤 값을 리턴하는 경우입니다. 이때 그 값의 종류에 따라
+
+- Promise 객체인 경우와
+- Promise 객체 이외의 경우,
+
+이 2가지 경우로 다시 나눌 수 있습니다.
+
+## (1) Promise 객체를 리턴하는 경우
+
+```jsx
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((result) => { console.log(result) });
+```
+
+위 코드에서 `(response) ⇒ response.json()` 이 콜백은 Promise 객체를 리턴하는 코드입니다. response 객체의 json 메소드가 Promise 객체를 리턴한다는 사실은 [이전 노트](https://www.codeit.kr/learn/courses/javascript-intermediate/4370)에서 배웠죠? 이렇게 콜백에서 Promise 객체를 리턴하는 경우에는 그 콜백을 등록한 then 메소드가 리턴했던 Promise 객체가 **콜백이 리턴한 Promise 객체의 상태와 결과를 똑같이 따라 갖게 됩니다.** 즉, 위 코드의 첫 번째 then 메소드가 리턴했던 Promise 객체는, response 객체의 json 메소드가 리턴한 Promise 객체가 추후에 갖게 되는 상태와 결과를 그대로 따라서 갖게 된다는 뜻입니다.
+
+좀 더 편하게 기억하기 위해서는 그냥 콜백에서 리턴하는 Promise 객체를 then 메소드가 그대로 리턴한다고 생각하셔도 됩니다. 그럼 이제 그 다음부터는 **콜백에서 리턴한 Promise 객체로부터 다시 Promise Chain이 쭉 이어져 나간다**고 보면 되죠.
+
+## (2) Promise 객체 이외의 값을 리턴하는 경우
+
+콜백이 꼭 Promise 객체만을 리턴하는 것은 아니겠죠? 그냥 단순한 숫자, 문자열, 일반 객체 등을 리턴할 수도 있는데요. 이런 경우에 then 메소드가 리턴했던 Promise 객체는 **fulfilled 상태**가 되고 **작업 성공 결과로 그 값을 갖게 됩니다.**
+
+```jsx
+// Internet Disconnected
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json(), (error) => 'Try again!')
+  .then((result) => { console.log(result) });
+```
+
+예를 들어, 지금 인터넷이 안 되는 상황에서 이 코드를 실행했다고 해봅시다. 그럼 fetch 함수의 작업이 실패해서 두 번째 콜백인 `(error) ⇒ 'Try again!` 이 실행되겠죠? 두 번째 콜백은 **'Try again!'**이라는 문자열을 리턴하고 있는데요. 이렇게 하면 해당 콜백을 등록한 then 메소드가 리턴했던 Promise가 fulfilled 상태가 되고, 그 작업 성공 결과로 'Try again' 문자열을 갖게 됩니다.
+
+자, 이때까지는 이전 영상들에서 모두 배운 내용들입니다. 아래부터는 조금 색다른 규칙들이 등장합니다. 집중해서 읽어봅시다.
+
+# 2. 실행된 콜백이 아무 값도 리턴하지 않는 경우
+
+```jsx
+// Internet Disconnected
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json(), (error) => { alert('Try again!'); })
+  .then((result) => { console.log(result) });
+```
+
+방금 전과 같은 상황에서 콜백이 무언가를 리턴하는 게 아니라 이 코드에서처럼 단순히 alert 함수만 실행하고 끝난다고 해봅시다. 그럼 결과적으로 이 콜백은 아무런 값도 리턴하지 않은 것과 같은데요. 자바스크립트에서는 함수가 아무것도 리턴하지 않으면 undefined를 리턴한 것으로 간주됩니다. 따라서 방금 전 **1. (2) 규칙에 따라** then 메소드가 리턴했던 Promise 객체는 **fulfilled 상태**가 되고, **그 작업 성공 결과로 undefined**를 갖게 됩니다.
+
+# 3. 실행된 콜백 내부에서 에러가 발생했을 때
+
+콜백이 실행되다가 에러가 발생하는 경우가 있습니다. 예를 들어
+
+```jsx
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => { 
+        ...
+        add(1, 2); // ReferenceError 발생
+        ... 
+  });
+```
+
+이렇게 정의하지도 않은 함수를 콜백에서 사용해서 에러가 발생하거나
+
+```jsx
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => { 
+        ...
+        throw new Error('failed'); 
+        ... 
+  });
+```
+
+특정 경우에 인위적으로 throw 문을 써서 에러를 발생시키는 경우도 있을 겁니다.
+
+이렇게 콜백이 실행되다가 에러가 발생한다면, then 메소드가 리턴했던 Promise 객체는 어떻게 될까요? 이 경우에는 Promise 객체가 **rejected 상태**가 되고, 작업 실패 정보로 해당 에러 객체를 갖게 됩니다. 잠깐 아래의 코드를 개발자 도구에서 실행해보겠습니다.
+
+```jsx
+const promise = fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => { throw new Error('test'); });
+```
+
+**promise** 를 입력하여 then 메소드가 리턴한 Promise 객체의 내부를 살펴보면 이렇게 생겼는데요.
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4374&directory=Untitled.png&name=Untitled.png)
+
+지금 [[PromiseState]]는 Promise 객체의 상태를, [[PromiseResult]]는 Promise 객체의 결과(작업 성공 결과 또는 작업 실패 정보)를 나타내는 내부 슬롯입니다.(내부 슬롯이란 자바스크립트 실행 엔진에서 내부적으로 관리하는 속성이라고 생각하시면 됩니다. 지금 당장 알아야할 내용은 아니니 Promise 객체에 집중합시다) 자세히 보면 현재 Promise 객체가 rejected 상태이고, 발생한 Error 객체를 그 작업 실패 정보로 갖고 있다는 것을 알 수 있습니다. 이렇게 콜백 실행 중에 에러가 발생하면, then 메소드가 리턴한 Promise 객체는 **rejected 상태**가 되고, 그 **작업 실패 정보로 해당 Error 객체를 갖게 된다**는 점, 잘 기억하세요!
+
+# 4. 아무런 콜백도 실행되지 않을 때
+
+```jsx
+// Internet Disconnected
+
+fetch('https://www.google.com') // Promise-1
+  .then((response) => response.text()) // Promise-2
+  .then((result) => { console.log(result) }, (error) => { alert(error) }); 
+```
+
+then 메소드의 아무런 콜백도 실행되지 않는 경우가 있습니다. 지금 인터넷을 끊고 나서 위 코드를 실행했다고 합시다. 그럼 fetch 함수가 리턴한 Promise-1 객체는 rejected 상태가 되기 때문에, 첫 번째 then 메소드의 두 번재 콜백이 실행되어야 합니다. 그런데 지금 두 번째 콜백이 없죠? 이런 경우에는 아무런 콜백도 실행되지 않는데요. 이런 경우에 then 메소드가 리턴한 Promise-2 객체는 어떻게 될까요? 이런 경우에 then 메소드가 리턴했던 Promise-2 객체는, **이전 Promise 객체와 동일한 상태와 결과를 갖게 됩니다.** 그러니까 지금 Promise-2 객체는 **Promise-1 객체처럼 rejected 상태가 되고, 똑같은 작업 실패 정보를 갖게 됩니다.**
+
+그럼 rejected 상태가 된 Promise-2의 then 메소드에는 이제 두 번째 콜백이 존재하기 때문에 그 두 번째 콜백이 실행됩니다. 이렇게 아무런 콜백도 실행되지 않는 경우에는 그 이전 Promise 객체의 상태와 결과가 그대로 이어진다는 사실, 잘 기억하세요.  
+ 자, 이때까지 Promise 객체의 **then 메소드가 리턴한 Promise 객체의 상태가, then 메소드 안의 콜백이 리턴하는 값에 따라 무슨 상태와 결과를 갖게 되는지** 배웠는데요. 사실 위의 내용을 이해하지 못해도, Promise 객체를 당장 사용하는 데는 문제가 없을 수도 있습니다. 하지만 나중에 Promise 객체를 사용하는 코드에서 문제가 생기거나 고난이도의 코드를 작성해야 할 때는 이런 기본적인 규칙을 모르면 내가 무엇을 잘못했는지조차 알 수 없게 됩니다. 따라서 이번에 배울 때 제대로 배우고 넘어갑시다.
+
+위의 내용을 이해될 때까지 반복해서 읽어보세요. 그래야 다음에 나오는 내용들을 잘 이해할 수 있습니다.
+
+
+
+아래 보면, 이해가 잘된다. 
+
+>Promise 객체의 then 메소드를 제대로 이해해야 Promise Chaining을 잘 할 수 있습니다. then 메소드가 리턴한 Promise 객체가 그 콜백의 리턴값에 따라 어떻게 되는지, 이전 노트에서 배운 각각의 케이스를 코드잇 실행기에 준비해두었는데요. 지금 각 케이스별로
+>
+>**Case(1)** : 콜백에서 Promise 객체를 리턴 **Case(2)** : 콜백에서 Promise 객체가 아닌 일반적인 값을 리턴 **Case(3)** : 콜백에서 아무것도 리턴하지 않음 **Case(4)** : 콜백 실행 중 에러 발생  **Case(5)** : 콜백이 실행되지 않음
+>
+>이렇게 나뉘어 있습니다.
+>
+>각 케이스별 코드 앞에 있는 주석을 선택적으로 해제 및 적용해가면서 각각 어떤 결과가 출력되는지 살펴보세요.
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => {
+    // return response.json(); // <- Case(1)
+    // return 10; // <- Case(2)
+    // // <- Case(3)
+    // throw new Error('failed'); // <- Case(4)
+})
+  .then((result) => {
+    console.log(result);
+  });
+
+// 존재하지 않는 URL
+/* fetch('https://jsonplaceholder.typicode.commmmmm/users')
+  .then((response) => response.json()) // <- Case(5)
+  .then((result) => { }, (error) => { console.log(error) }); */
+```
+
+**과제** 해설
+
+then 메소드가 리턴한 Promise 객체를 A라고 했을 때 각 경우에 A는 다음과 같은 상태와 결과를 갖게 됩니다.
+
+**Case(1) : 콜백에서 Promise 객체를 리턴**
+
+콜백이 리턴한 Promise  객체를 B라고 하면 A는 B와 동일한 상태와 결과를 갖게 됩니다. 나중에 B가 fulfilled 상태가 되면 A도 똑같이 fulfilled 상태가 되고 동일한 작업 성공 결과를, 나중에 B가 rejected 상태가 되면 A도 똑같이 rejected 상태가 되고 동일한 작업 실패 정보를 가진다는 뜻입니다.
+
+**Case(2) : 콜백에서 Promise 객체가 아닌 일반적인 값을 리턴**
+
+A는 fulfilled 상태가 되고, 해당 리턴값을 작업 성공 결과를 갖게 됩니다.
+
+**Case(3) : 콜백에서 아무것도 리턴하지 않음**
+
+자바스크립트에서는 함수가 아무것도 리턴하지 않으면 undefined를 리턴한 것으로 간주됩니다.  따라서 A는 fulfilled 상태가 되고, undefined를 작업 성공 결과로 갖게 됩니다.
+
+**Case(4) : 콜백 실행 중 에러 발생**
+
+A는 rejected 상태가 되고, 해당 에러 객체를 작업 실패 정보로 갖게 됩니다.
+
+**Case(5) : 콜백이 실행되지 않음**
+
+A는 호출된 then 메소드의 주인에 해당하는, 이전 Promise 객체와 동일한 상태와 결과를 가집니다.
+
+Promise 객체 공부는 then 메소드가 그 처음과 끝이라고 해도 될 정도로, then 메소드를 정확하게 이해하는 것은 중요합니다. 지금 각각의 케이스를 잘 기억해두면, 앞으로의 내용을 훨씬 더 쉽게 이해할 수 있을 겁니다.
+
+*참고로 코드잇 실행기는 웹 브라우저와는 조금 다른 Node.js라는 자바스크립트 실행 환경을 사용하기 때문에 출력되는 에러의 내용이 웹 브라우저에서와 달리 조금 더 장황한 내용일 수 있습니다. 이 점을 참고해주세요.

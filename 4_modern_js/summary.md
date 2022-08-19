@@ -452,7 +452,7 @@ console.log(color); // silver
 console.log(rest); // {memory: "16 GB 2667 MHz DDR4", storage: "1TB SSD 저장 장치"}
 ```
 
-
+#### 
 
 # 에러와 에러 객체
 
@@ -765,6 +765,121 @@ const uniqNumbers = new Set(numbers);
 
 console.log(uniqNumbers); // Set(5) {1, 3, 4, 2, 5}
 ```
+
+# 모듈
+
+모듈은 간단하게, 자바스크립트 파일 하나라고 할 수 있습니다. 복잡하고 많은 양의 코드를 기능에 따라 각각의 파일로 나눠 관리하면
+
+1. 코드를 좀 더 효율적으로 관리할 수 있고,
+2. 비슷한 기능이 필요할 때 다른 프로그램에서 재사용 할 수도 있다는 장점이 있습니다.
+
+# 모듈 스코프
+
+모듈 파일 안에서 선언한 변수는 외부에서 자유롭게 접근할 수 없도록 막아야 하는데요. 다시 말해 모듈은 파일 안에서 모듈 파일만의 독립적인 스코프를 가지고 있어야 합니다.
+
+HTML파일에서 자바스크립트 파일을 불러올 때 모듈 스코프를 갖게 하려면 `script`태그에 `type`속성을 `module`이라는 값으로 지정해 주어야 합니다.
+
+```html
+<body>
+  <script type="module" src="index.js"></script>
+</body>
+```
+
+# 모듈 문법
+
+자바스크립트의 모듈 문법은 기본적으로 `export`와 `import` 입니다. 모듈 스코프를 가진 파일에서 외부로 내보내고자 하는 변수나 함수를 `export` 키워드를 통해 내보내고, 모듈 파일에서 내보낸 변수나 함수들은 다른 파일에서 `import` 키워드를 통해 가져옵니다.
+
+```js
+// printer.js
+export const title = 'CodeitPrinter';
+
+export function print(value) {
+  console.log(value);
+};
+// index.js
+import { title, print } from './printer.js';
+
+print(title);
+```
+
+# 이름 바꿔 import 하기
+
+`import` 키워드를 통해 모듈을 불러올 때 `as` 키워드를 활용하면 `import`하는 대상들의 이름을 변경할 수 있습니다. `import` 할 변수나 함수 이름을 조금 더 간결한 이름으로 바꾸거나, 혹은 더 구체적으로 바꾸고 싶을 때 활용하면 좋겠죠? 뿐만 아니라 이름을 바꿔서 `import` 하면 여러 파일에서 불러오는 대상들의 이름이 중복되는 문제를 해결할 수도 있습니다.
+
+```js
+import { title as printerTitle, print, printArr } from './printer.js';
+import { title, data as members } from './members.js';
+
+printer(title);
+arrPrinter(members);
+```
+
+# 한꺼번에 import 하기
+
+`import`할 때 **와일드카드 문자(\*)**와 `as`를 활용하면 모듈 파일에서 `export`하는 모든 대상을 하나의 객체로 불러올 수 있습니다.
+
+```js
+import * as printerJS from './printer.js';
+
+console.log(printerJS.title); // CodeitPrinter
+console.log(printerJS.print); // ƒ print(value) { console.log(value); }
+```
+
+# 한꺼번에 export 하기
+
+변수나 함수 앞에 매번 `export` 키워드를 붙일 수도 있지만, 선언된 변수나 함수를 하나의 객체로 모아 한꺼번에 내보낼 수도 있습니다. 이때 `as` 키워드를 활용하면 이름을 변경해서 `export`할 수도 있습니다.
+
+```js
+const title = 'CodeitPrinter';
+
+function print(value) {
+  console.log(value);
+}
+
+function printArr(arr) {
+  arr.forEach((el, i) => {
+    console.log(`${i + 1}. ${el}`);
+  });
+}
+
+export { title as printerTitle, print, printArr };
+```
+
+# default export
+
+`export`를 할 때 `default` 키워드를 함께 사용하면 모듈 파일에서 기본적으로 `export`할 대상을 정할 수 있습니다. 일반적으로 모듈 파일에서 `export` 대상이 하나라면, 이 `default` 키워드를 함께 활용하는 것이 조금 더 간결한 코드를 구성하는데 도움이 되는데요.
+
+```js
+const title = 'CodeitPrinter';
+
+function print(value) {
+  console.log(value);
+}
+
+export default print;
+```
+
+**default export**는 `import`할 때 기본적으로 다음과 같이 불러올 수 있지만,
+
+```js
+import { default as printerJS } from './printer.js';
+
+console.log(printerJS.title); // CodeitPrinter
+console.log(printerJS.print); // ƒ print(value) { console.log(value); }
+```
+
+다음과 같이 축약형 문법으로 `import` 할 수도 있기 때문입니다.
+
+```js
+import printerJS from './printer.js';
+
+console.log(printerJS.title); // CodeitPrinter
+console.log(printerJS.print); // ƒ print(value) { console.log(value); }
+```
+
+
+
+
 
 
 
@@ -3025,3 +3140,297 @@ const uniqNumbers = new Set(numbers);
 
 console.log(uniqNumbers); // Set(5) {1, 3, 4, 2, 5}
 ```
+
+
+
+
+
+
+
+# Module 
+
+- 기능별로, 분리해서 저장한다.
+
+  ![module](./images/module.png)
+
+  - 이를 통해 효율적 관리 및 재사용이 가능. 
+  - ES2015 이후 모듈화가 다양하게 가능해졌다. 
+
+- 모듈 파일의 조건
+
+  - 모듈스코프 : 모듈파일 안에서 정의한 변수나 함수는 해당 모듈 안에서만 사용이 가능해야 한다. 
+
+  - 특이한게, 한 디렉토리 안에, `index.js`, `printer.js` 두 파일이 있으면, index.js에서 선언한 변수를 printer.js에서 그냥 아래처럼 출력이 가능하다. 
+
+    ```js
+    console.log(title)
+    ```
+
+    이런 현상이 생각보다 큰 문제를 발생시킨다. 서로 다른 파일에 있는 변수나 함수 의도치 않게 덮어씌우거나 할 수가 있다. 그래서, 모듈  scope가 필요한 것. 
+
+    html에서 해야돼. 
+
+    ```js
+    <script type="module" src="./index.js"></script>
+    ```
+
+    위처럼, html에서 js를 불러올때, module 속성을 줘야 한다. 근데, **에러가** 발생하는 구만?
+
+    애초에 브라우져에서 보안을 위해 막혀있는 것. 
+
+    서버를 통해 html을 실행해야 함. `Live Server`를 통해 실행한다. 
+
+    이제 위처럼, 모듈타입으로 설정할 수 있고, 서로 모듈 스코프를 설정해 놓을 수 있다. 
+
+- **모듈 문법**
+
+  ```js
+  // index.js
+  
+  const title = 'PRINTER'
+  
+  function print(value){
+    console.log(value)
+  }
+  ```
+
+  이제 이거를 다른 파일에서 가져가서 실행시키고 싶다. 
+
+  how? 내보내고 싶은 곳에서 선언문 앞에 `EXPORT`를 써준다. 
+
+  ```js
+  // index.js
+  
+  export const title = 'PRINTER'
+  
+  export function print(value){
+    console.log(value)
+  }
+  ```
+
+  그리고, 애들을 사용하고 싶은 파일에 가서, 
+
+  ```js
+  import {title, print} from './printer.js'
+  
+  print(title)
+  ```
+
+  이렇게 모듈 문법으로 오고가고 하면
+
+  `<script type="module" src="./index.js"></script>` 이게 필요가 없지.  애초에 자바스크립트의 진입점 역할을 하는애 하나만 불러왔으면 된거야. 
+
+- 변수 이름을 바꿔서 import 하고 싶은 경우는?
+
+  ```js
+  import {title, print} from './module.js'
+  
+  print(title)
+  
+  
+  ## 이렇게 하면 에러가 나니깐, 
+  const title = "Hi"
+  ```
+
+  아래처럼 하면 된다. 
+
+  ```js
+  import {title as original_title, print} from './module.js'
+  
+  print(title)
+  
+  const title = "Hi"
+  ```
+
+- 한꺼번에 다루기. 
+
+  사용하는 것만 import하면 되지만, 엄청 많다면? *을 쓰고 프로퍼티처럼 골라와서 사용할 수 있다. 
+
+  ```js
+  import {* as printJS } from './module.js'
+  console.log(printJS.title)
+  ```
+
+  export할때도, 선언문마다 
+
+  ```js
+  export let variable = "hi"
+  
+  이렇게 하지 말고, 
+  export {variable, variable2} 
+  이렇게 하면 된다. 
+  ```
+
+  as 써서 이름을 바꿔서 애초에 export도 가능하다. 
+
+  ```js
+  export {variable, variable2} 
+  ```
+
+  #### default export
+
+- ```js
+  export default title
+  ```
+
+  변수나, 함수, 혹은 `export default 'sanghyuk'` 이런식으로 직접 내보낼 수도 있다.
+
+  그러나, 해당 모듈 파일 안에서 딱 한번만 사용할 수 있다. 
+
+  default로 export된 값은 import를 할때에도, 
+
+  `import {default as hi} from ''`디폴트 키워드를 같이 붙여야 되나, 반드시 as를 붙여야 한다. 
+
+  근데, 디폴트는 사실 중괄호 밖으로 빼낼 수가 있다. 
+
+  **default as** hi bold부분을 통으로 빼내고, 
+
+  `import hi from './import.js'` 이렇게 사용이 가능하다. 
+
+  고로, 중괄호 여부로 default와 default아닌 named export를 구분할 수 있다. 
+
+  - 또한 참고로, wildcard라고 불리는 *를 써서 임포트를 하게 되면, `printJS.default`라는 디폴트 키워드로 접근이 가능하다. 
+
+  - named, 혹은 default 중에 하나만 쓰는 것을 보통 권장하긴 한다. 
+
+  - 또한, 디폴트에 아래처럼 묶어서 export하면, 객체가 export되는 것. 
+
+    ```js
+    const title = 'HI'
+    
+    function print(value){
+      console.log(value);
+    }
+    
+    export default {title, print}
+    ```
+
+    `export default {title: title, print: print}` 사실 이 상황이였던 거야. 
+
+  
+
+그동안 배운 문법만 되돌아봐도 모듈 문법은 정말 다양한 방식으로 작성될 수가 있습니다. `export`를 할 때도 선언문을 `export`하거나
+
+```js
+export const title = 'Module';
+```
+
+선언된 변수나 함수를 코드 블록으로 묶어서 `export`할 수도 있고,
+
+```js
+const printer = (value) => {
+  console.log(value);
+};
+
+const arrPrinter = (arr) => {
+  arr.forEach((el, i) => {
+    console.log(`${i + 1}. ${el}`);
+  })
+};
+
+export { printer, arrPrinter };
+```
+
+때로는 `as` 키워드를 통해 이름을 변경해서 `export`를 할 수도 있었죠?
+
+```js
+const printer = (value) => {
+  console.log(value);
+};
+
+const arrPrinter = (arr) => {
+  arr.forEach((el, i) => {
+    console.log(`${i + 1}. ${el}`);
+  })
+};
+
+export { printer as namedPrinter, arrPrinter };
+```
+
+그리고 `default` 키워드를 통해 표현식을 `export`하는 방법도 배우면서,
+
+```js
+const title = 'Module';
+
+export default title;
+```
+
+위 코드 처럼 단순히 **하나의 대상을 export**하는 것뿐만 아니라 아래 코드처럼 **여러 대상을 객체 값으로 모아 내보내는 방식**도 가능하다는 것도 배웠습니다.
+
+```js
+const title = 'Module';
+
+const printer = (value) => {
+  console.log(value);
+};
+
+const arrPrinter = (arr) => {
+  arr.forEach((el, i) => {
+    console.log(`${i + 1}. ${el}`);
+  })
+};
+
+export default { title, printer, arrPrinter };
+```
+
+그리고 `import`도 `import` 키워드 이후에 중괄호를 감싸면, 아래 코드 처럼 모듈 파일에서 `export`하는 항목들을 선택적으로 불러올 수 있고
+
+```js
+import { title, data } from './modules.js';
+```
+
+`as` 키워드를 통해서 아래 코드 처럼 이름을 바꿀 수도 있었죠?
+
+```js
+import { title as moduleTitle, data } from './modules.js';
+```
+
+뿐만 아니라 **와일드카드 문자(\*)**를 통해서 아리 코드 처럼 `export`된 항목들을 모두 불러올 수도 있었습니다.
+
+```js
+import * as modules from './modules.js';
+```
+
+그리고 아래 코드 처럼 **default export**된 대상을 `import`할 때는
+
+```js
+import { defult as modules } from './modules.js';
+```
+
+아래 처럼 축약형으로 불러올 수 있다는 부분도 살펴봤었습니다.
+
+```js
+import modules from './modules.js';
+```
+
+심지어 이러한 방식들을 잘 응용하면,
+
+```js
+// (modules.js)
+import module1 from './sub-module1.js';
+import module2 from './sub-module2.js';
+import module3 from './sub-module3.js';
+
+export { module1, module2, module3 };
+// index.js
+import { module1, module2, module3 } from 'modules.js';
+```
+
+위 코드들 처럼 여러 개의 기능으로 잘게 나누어진 모듈을 `import`한 다음 다시 `export`하는 모듈 파일을 만들 수 있는데요. 비슷한 특징을 가진 여러 모듈 파일들을 다시 하나의 모듈 파일로 만들 수 있어서 파일 관리를 유용하게 할 수 있도록 도와줍니다.
+
+모듈 문법은 나중에 여러분들이 자바스크립트를 기반으로 한 라이브러리나 프레임워크를 사용할 때 꼭 필요할 정도로 정말 많이 활용되기 때문에 다양한 상황들을 경험해보고 어떤 방식으로 풀어나갈지 고민하는 것이 중요한데요.
+
+행여나 자바스크립트 코드만 다룬다고 하더라도 조금 더 효율적인 코드 작성을 위해서도 굉장히 중요한 부분이기 때문에 처음에는 다양한 표현방식 가능하다는 점이 꽤 혼란스러울 수도 있지만, 여러 번 복습을 통해서라도 잘 이해해 두시는 걸 권장해 드립니다!
+
+```js
+import addMenu from './functions/add.js';
+import deleteMenu from './functions/delete.js';
+import rollMenu from './functions/roll.js';
+
+export { addMenu, deleteMenu, rollMenu };
+```
+
+```js
+import { addMenu, deleteMenu, rollMenu } from './functions.js';
+```
+
