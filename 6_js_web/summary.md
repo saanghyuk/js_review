@@ -10,6 +10,8 @@
 
 [Axios](#Axios )
 
+[Async/Await](# Async/Await)
+
 ### Fetch 사용해보기
 
 `개발자도구 - console`에서 아래 요청 보내보기
@@ -3623,3 +3625,1125 @@ axios가 이렇게 fetch에 비해 다양한 기능을 지원하는 것은 맞�
 실무에서는 fetch 이외에 axios도 많이 쓴다는 점,  그리고 axios 또한 리퀘스트를 보내는 주요 메소드들이 Promise 객체를 리턴한다는 점을 기억하세요.
 
 이번 챕터에서 Promise 객체를 잘 공부했다면, axios 사용법도 쉽게 익힐 수 있을 겁니다.
+
+# Async/Await
+
+> 총정리
+
+이때까지 비동기 실행에 관해 배운 내용들을 정리해봅시다. 일단 비동기 실행의 의미에 대해서 정리해봅시다. 사실 비동기 실행의 정의는 아래와 같이 다양한 방식으로 표현될 수 있습니다.
+
+- 특정 작업이 시작되고, 그 작업이 모두 완료되기 전에 바로 다음 코드가 실행되는 방식의 실행, 나머지 작업은 나중에 콜백을 통해 수행되는 방식의 실행
+- 특정 처리를 나중으로 미루는 방식의 실행
+- 콜백을 등록해두고, 추후에 특정 조건이 만족되면 그 콜백으로 나머지 작업을 수행하는 방식의 실행
+
+이렇게 다양한 표현으로 그 정의를 써볼 수 있는데요. **특정 처리를 담당하는 존재(콜백)의 실행을 나중으로 미룬다는 점**만 잘 기억하시면 딱히 어려울 게 없습니다.
+
+이제 이때까지 배웠던, 비동기 실행 관련 문법 3가지인
+
+(1) 파라미터로 바로 콜백을 전달하는 형태의 전통적인 비동기 실행 함수 (2) Promise (3) async/await
+
+에 대해 정리하겠습니다.
+
+# 1. 파라미터로 바로 콜백을 전달하는 형태의 전통적인 비동기 실행 함수
+
+**setTimeout, setInterval 함수, DOM 객체의 addEventListener 메소드 등**이 여기에 해당했습니다.
+
+```jsx
+setTimeout(() => {
+  console.log('asynchronously executed');
+}, 2000);
+
+button.addEventListener('click', (event) => { console.log('You Clicked'); });
+```
+
+이런 방식으로 함수의 파라미터로 콜백을 바로 집어넣는 코드들을 봤었죠?
+
+이렇게 함수의 파라미터로 콜백을 바로 전달하는 방식은 여전히 많은 경우에 쓰이고 있지만,  **여러 비동기 작업의 순차적인(sequential) 처리가 필요한 경우**에 이런 함수들로 코드를 작성하면,
+
+```jsx
+fs.readFile('file1.txt', 'utf8', (error1, data1) => {
+  if (error1) {
+    console.log(error1);
+  } else {
+    console.log(data1);
+    fs.readFile('file2.txt', 'utf8', (error2, data2) => {
+      if (error2) {
+        console.log(error2);
+      } else {
+        console.log(data2);
+        fs.readFile('file3.txt', 'utf8', (error3, data3) => {
+          if (error3) {
+            console.log(error3);
+          } else {
+            console.log(data3);
+          }
+        });
+      }
+    });
+  }
+});
+```
+
+위와 같이 코드의 가독성이 급격하게 떨어지는 **콜백 헬(callback hell) 문제**가 발생할 가능성이 높다고 했습니다.
+
+# 2. Promise
+
+```jsx
+fetch('https://www.google.com')
+  .then((response) => response.text())
+  .then((result) => { console.log(result); })
+  .catch((error) => { console.log(error); })
+  .finally(() => { console.log('exit'); });
+```
+
+**Promise 객체를 사용하면 콜백 헬 문제를 방지하면서, 여러 비동기 작업을 순차적으로 처리할 수 있다**고 배웠습니다.
+
+그리고 기존의 1.과 같은 전통적인 비동기 실행 함수들 중에서도 그 콜백이 단 한 번만 실행되는 함수들은
+
+```jsx
+function readFile_promisified(filename) {
+  const p = new Promise((resolve, reject) => {
+    fs.readFile(filename, 'utf8', (error, data) => {
+      if (error) {
+        reject(error); // 에러 발생 시 -> rejected
+      } else {
+        resolve(data); // 파일 내용 읽기 완료 -> fulfilled
+      }
+    });
+  });
+  return p;
+}
+```
+
+이런 식으로 **Promisify**해서 콜백 헬의 가능성을 없애고, Promise Chain 안에서 그 콜백의 리턴값을 사용할 수 있다는 것도 배웠었죠?
+
+그리고 rejected 상태의 Promise 객체에 대비하기 위한 catch 메소드, 어느 상황이든 항상 마지막에 실행해야 할 코드가 있을 때 사용하는 finally 메소드도 배웠습니다.
+
+# 3. async / await 구문
+
+```jsx
+async function fetchAndPrint() {
+  try {
+    const response = await fetch('https://www.google.www');
+    const result = await response.text();
+    console.log(result);
+  } catch(error) {
+    console.log(error);
+  } finally {
+    console.log('exit');
+  }
+}
+
+fetchAndPrint();
+```
+
+async/await 구문은 **Promise 객체를 다루는 코드(Promise Chaining 코드 등)를 사람들이 좀더 익숙하게 느끼는 동기 실행 스타일의 코드로 작성할 수 있게 해주는 Syntactic sugar**라고 했습니다. 하지만 동기 실행 코드처럼 보인다고 실제로 코드가 보이는 순서대로 실행되는 것은 아니라고 했죠?
+
+async 함수 안의 내용이 순차적으로 실행되다가도, **await 문을 만나면 await 바로 뒤에 붙은 코드를 실행해두고, 일단은 함수 바깥으로 코드 흐름이 바뀐다**고 했던 거, 반드시 기억하셔야 합니다.
+
+이런 점만 주의하면 사실 **Promise 기반의 코드들은 가능한 경우에 모두 async/await 구문으로 전환해서 작성하는 게 더 좋습니다.**
+
+참고로 **async/await(ES2017, 2017년 도입)**은 **Promise(ES6, 2015년 도입)**에 비해 보다 더 최근에 자바스크립트 표준에 도입된 문법인데요. 이렇게 같은 기능을 더 편하게 구현할 수 있도록 자바스크립트 문법은 늘 발전하고 있습니다.
+
+자, 이때까지 자바스크립트로 비동기 실행 코드를 작성할 수 있는 방법 3가지를 살펴봤는데요.
+
+2021년 1월을 기준으로 아직 위의 3가지 비동기 실행 관련 문법들은 서로 상호보완적인 것들이라고 할 수 있습니다. 왜냐하면 아직 아래와 같이 하나가 다른 하나를 완벽히 대체하지 못하는 측면이 있기 때문입니다.
+
+1. 콜백을 함수의 파라미터로 바로 전달하는 전통적인 방식의 비동기 실행 함수들 중에서도 setInterval, addEventListener처럼 그 콜백이 **단 한번이 아니라 여러 번 실행되어야 하는 것들은 Promisify해서 사용하면 안 됩니다. Promise 객체는 한번 fulfilled 또는 rejected 상태가 되고나면 그 상태와 결과가 다시는 바뀌지 않기 때문입니다.**
+2. async/await 구문의 경우, await은 async 함수 안에서만 사용할 수 있고, 코드의 top-level(어떤 함수 블록 안에 포함된 것이 아닌 코드의 최상위 영역)에서는 사용될 수는 없습니다. 그래서 코드의 top-level에서 async 함수가 리턴한 Promise 객체의 작업 성공 결과를 가져오려면 await을 사용할 수는 없고, 여전히 then 메소드를 사용해야합니다.
+
+그러니까 이 3가지 모두 잘 알아둬야겠죠? 그리고 실제 개발을 할 때는 여러분이 사용하려는 문법이 어느 웹 브라우저에서 지원을 하고 안 하는지를 체크해야 하는데요. 자바스크립트의 각 문법별 브라우저 지원 현황을 [이런 사이트](https://kangax.github.io/compat-table) 등을 통해 조사하고 개발을 시작하는 게 좋습니다. 다행히 이때까지 우리가 배운 3가지 종류의 문법은 대다수의 웹 브라우저에서 지원합니다.
+
+사실 비동기 실행에 관해서 중요한 것은 어느 문법의 코드를 작성하든 그 개념을 제대로 이해하고 코드를 작성해야 한다는 점입니다.  콜백 헬 문제를 해결하기 위해 Promise 객체가 등장했고, Promise를 좀 더 편하게 다루기 위해서 async/await 구문이 등장했지만,  여러분이 각 문법을 제대로 이해하지 못하고 코드를 작성한다면, 그것은 또다서 Promise hell, async/await hell이 될 뿐입니다.
+
+하지만 각각의 문법을 제대로 이해하고 코드를 작성한다면 여러분의 개발 실력과 생산성은 한층 업그레이드될 것이구요.
+
+이번 토픽을 통해 자바스크립트로 비동기 실행 코드를 작성하는 능력, 남이 작성한 비동기 실행 코드를 해석할 수 있는 능력을 충분히 기르셨기를 바랍니다. 정말 고생 많으셨습니다!
+
+
+
+------------------
+
+
+
+Promise객체를 더 간단하게 다룰 수 있는 방법이 있다. 많은 개발자들이 이걸 사용해서 Promise를 다룬다. 
+
+이거까지 하면, JS에서 비동기 관련된 모든 것을 하는 것. 
+
+아래 코드를, Async/Await로 바꿔보자. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { console.log(result)})
+```
+
+바꾸면, 아래와 같다. 
+
+```js
+async function fetchAndPrint(){
+  const response = await fetch('https://jsonplaceholder.typicode.com/users')
+  const result = await response.text();
+  console.log(result);
+}
+
+fetchAndPrint()
+```
+
+잘 보면, `await`은 둘다 어떤, Promise 객체를 리턴하는 코드 앞에 붙였다. 
+
+`fetchAndPrint()` 함수는 위에서, fetch를 쓴 구문과 동일하게 동작한다. 
+
+먼저, `async` - `asynchronous`의 줄임말로 비동기를 의미한다. 함수 앞에 써 놓으면, **'이 함수에는 비동기적으로 실행할 부분이 있습니다.'**라고 말해주는 것. 그게 어디냐? 바로 '**await이 붙어있는 곳!**'
+
+await은 말 그대로 기다린다는거야. await은 그 뒤에 써있는 것을 실행하고, 리턴되는 Promise 객체를 기다려 준다. 언제까지 기다리냐? 해당 Promise객체가, `fulfilled` 혹은 `rejected` 상태가 될 때까지 기다려 준다. 그리고, fulfilled상태가 되면, 작업성공 결과를 리턴해준다. 
+
+> function 앞에 `async`를 붙이면 해당 함수는 항상 프라미스를 반환합니다. 프라미스가 아닌 값을 반환하더라도 이행 상태의 프라미스(resolved promise)로 값을 감싸 이행된 프라미스가 반환되도록 합니다.
+
+
+
+#### Async/Await 구문의 실행 원리를 구체적으로 살펴보자. 
+
+**일단, Await은 Async함수 안에서만 사용할 수 있다.** async가 안붙어있는 함수에서는 await써봐야 어차피 에러 뜬다.  아래처럼 해보면, `1,2,3,4,5,6,7, result` 순서로 실행된다. 
+
+```js
+async function fetchAndPrint(){
+  console.log(2);
+  const response = await fetch('https://jsonplaceholder.typicode.com/users')
+  console.log(7)
+  const result = await response.text();
+  console.log(result);
+}
+
+console.log(1)
+fetchAndPrint()
+console.log(3)
+console.log(4)
+console.log(5)
+console.log(6)
+```
+
+ `1,2,3,4,5,6,7, result` 순서로 실행된다. 
+
+`await`을 만나면, 일단 그 `await`뒤에 있는 함수를 실행하고, 코드 흐름은 다시 `fetchAndPrint` 함수를 만난 곳으로 간다. 즉, **fetchAndPrint바깥으로 실행 흐름이 바뀐다는 것. => 이게 진짜 중요한 실행흐름이다.** 그래서, 3, 4, 5, 6이 실행된 후에, 아까 await로 가서 `fulfilled` 상태가 될때까지 대기탄다. 어쨋든 fulfilled가 되면, 작업성공결과를 추출해서 리턴하고, 7 출력하고, 다시 await을 만나게 된다. 그런데, 여기서도 다시 `await` 뒤에 있는 `response.text()`를 실행하고 나서, **다시 바깥으로 나간다.**  그런데, 이제는 바깥에 뭐 딱히 없어. 그냥 Promise가 fulfilled가 될때까지 기다리는 것. 
+
+진짜 꼭 기억해야 한다. 
+
+**await을 만나면, 함수 바깥으로 나가서 실행하고 돌아온다.** 함수 앞에 붙어있는 `async`라는 말 자체가, 함수 바깥에 다 실행 되고 나서도 함수 내부에 실행될 놈이 있다는 것. 
+
+
+
+
+
+이전 영상에서는 **async** 함수 안의 코드들이 어떤 식으로 실행되는지 배웠습니다.  이때 함수 안에 존재하는 **await**이 코드 실행 흐름에 변화를 주는 중요한 역할을 했는데요.  코드를 다시 살펴봅시다.
+
+```jsx
+/* fetch('https://www.google.com')
+    .then((response) => response.text())
+    .then((result) => { console.log(result); }); */
+
+async function fetchAndPrint() {
+  console.log(2);
+  const response = await fetch('https://jsonplaceholder.typicode.com/users');
+  console.log(7);
+  const result = await response.text();
+  console.log(result);
+}
+
+console.log(1);
+fetchAndPrint();
+console.log(3);
+console.log(4);
+console.log(5);
+console.log(6);
+```
+
+사실 fetchAndPrint 함수를 언뜻 보면, 비동기 실행 함수처럼 생기지 않았습니다. 오히려 코드가 등장하는 순서대로 실행될 것처럼 생겼죠. 즉, 동기 실행되는 코드처럼 생겼는데요. 그런데 이건 의도된 것입니다.
+
+왜냐하면 async/await 구문 자체가 기존의 Promise 객체를 사용하는 코드(Promise Chaining)를
+
+(1) 개발자가 더 편하게 작성할 수 있도록 하고 (2) 코드의 가독성을 높이기 위해서
+
+도입된 일종의 **Syntactic sugar**(기존 문법을 더 편하게 사용할 수 있도록 하는 문법적 장치)에 해당하기 때문입니다.
+
+사실 우리에게는 이때까지 배웠던 것처럼
+
+- 전통적인 형식의 비동기 실행 함수에 콜백을 바로 전달하거나,
+- Promise 객체 뒤에 **.then** 메소드를 붙이는 것보다는
+
+그냥 코드를 차례대로 써나가는 것이 더 익숙한 방식입니다.  그리고 바로 **async/await 구문이 Promise 객체를 우리에게 이미 익숙한 동기 실행 코드 방식으로 다룰 수 있게 해주는 문법**인 겁니다.
+
+하지만 동기 실행 코드처럼 보인다고 해서 정말로 동기 실행되는 것은 아닙니다. 만약 위의 코드를 그냥 보이는 대로만 해석한다면, 그 결과가 아래처럼 출력될 것으로 생각하기 쉽습니다.
+
+```jsx
+1
+2
+7
+[리스폰스의 내용]
+3
+4
+5
+6
+```
+
+하지만 **코드에서 async/await이 보인다면 사실 비동기 실행되는 코드가 있다는 걸 반드시 기억**해야 하는데요.  사실 위 코드의 실제 출력 결과는
+
+```jsx
+1
+2
+3
+4
+5
+6
+7
+[리스폰스의 내용]
+```
+
+이것이었죠? 만약 async/await 구문의 실행 원리가 아직도 이해되지 않는 분은 이 코드의 원래 모습을 떠올려보세요.
+
+사실 위 코드의 원래 모습은 아래와 같다고 할 수 있습니다.
+
+```jsx
+/* fetch('https://www.google.com')
+    .then((response) => response.text())
+    .then((result) => { console.log(result); }); */
+
+function fetchAndPrint() {
+  console.log(2);
+  fetch('https://jsonplaceholder.typicode.com/users')
+    .then((response) => {
+      console.log(7);
+      return response.text();
+    })
+    .then((result) => { console.log(result); });
+}
+
+console.log(1);
+fetchAndPrint();
+console.log(3);
+console.log(4);
+console.log(5);
+console.log(6);
+```
+
+지금 함수 이름 앞에 있던 async 키워드를 삭제했고, await이 있던 코드들은 Promise Chaining을 하는 코드로 바꿨습니다. 이 코드를 실행해보면 역시 이전 영상과 같은 결과가 출력되는데요.
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4105&directory=Untitled.png&name=Untitled.png)
+
+원래 모습이었을 코드를 보니까, 이제 왜 async/await가 있는 코드가 제가 말한 것처럼 실행되는지 이해되시죠?
+
+이번 노트에서 배운 것처럼 async/await 구문을 사용하면,
+
+(1) Promise 객체를 사용할 때, then 메소드 등을 사용하지 않고도  (2) 마치 동기 실행 코드처럼 코드를 훨씬 더 간단하고 편하게 작성할 수 있습니다. 코드를 읽기에도 훨씬 편하구요.
+
+하지만 이런 편안함을 얻은 대신 한 가지 주의해야 할 점이 있습니다. 바로 이 async/await 구문 중에 비동기 실행되는 부분이 있다는 사실에 유의하며 코드를 작성 및 해석해야한다는 것입니다. **아무리 async/await 구문이 동기 실행 코드처럼 생겼다고 해도 그 속에는 Promise 객체가 존재함을 절대 잊지 마세요.**
+
+자, async/await 구문의 실행 원리를 **다시 한번 정리**할게요.
+
+async 함수 안의 코드가 실행되다가 await을 만나면, 일단 **await 뒤의 코드가 실행되고, 코드의 실행 흐름이 async 함수 바깥으로 나가서 나머지 코드를 다 실행합니다.** 물론 함수 바깥에 더 이상 실행할 코드가 없을 수도 있습니다.  어느 경우든 그 이후로는, await 뒤에 있던 Promise 객체가 fulfilled 상태가 되기를 기다립니다. 그리고 기다리던 Promise 객체가 fulfilled 상태가 되면 await이 Promise 객체의 작업 성공 결과를 리턴하는 겁니다.
+
+그런데 이때까지 Promise 객체가 fulfilled 상태가 되기만을 기다렸는데, await 뒤의 Promise 객체가 rejected 상태가 될 수도 있겠죠? 이런 경우는 어떻게 대비해야 하는지 다음 영상에서 배워봅시다.
+
+예시)
+
+```js
+async function getTheLastPostOfTheLastUser() {
+  const usersJSON = await fetch("https://jsonplaceholder.typicode.com/users");
+  const users = await usersJSON.json();
+  const lastUser = users[users.length - 1];
+  const { id } = lastUser;
+  const postsJSON = await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${id}`);
+  const posts = await postsJSON.json();
+  const lastPost = posts[posts.length - 1];
+  return lastPost;
+}
+
+getTheLastPostOfTheLastUser().then((lastPost) => {
+  console.log(lastPost);
+});
+```
+
+
+
+
+
+
+`async`가 앞에 붙은 함수는 그 안에 비동기적으로 실행될 내용이 있다는 뜻이고, 그 부분은 바로 함수 내부에서 `await`이 붙은 부분입니다.  `async` 함수 안의 `await`은 그 뒤의 코드를 실행해놓고, 코드의 실행 흐름을 함수가 호출된 외부로 바꿉니다.  외부의 코드를 모두 실행하고 나서는 `await` 뒤의 `Promise` 객체의 상태가 `fulfilled` 상태가 될 때까지 기다렸다가(또는 이미 `fulfilled` 상태가 된 `Promise` 객체에 대해서) 그 작업 성공 결과를 추출해서 리턴하는데요.
+
+지금 코드잇 실행기에 있는 코드를 실행해서 각 경우에 어떤 결과가 출력되는지 확인해봅시다.
+
+```js
+const p1 = fetch('https://jsonplaceholder.typicode.com/users?id=1')
+  .then((response) => response.text());
+const p2 = new Promise((resolve, reject) => {
+  setTimeout(() => { resolve('hello'); }, 2000);
+});
+const p3 = Promise.resolve('Success');
+// const p4 = Promise.reject(new Error('Fail'));
+
+async function test() {
+  console.log(await p1);
+  console.log(await p2);
+  console.log(await p3);
+  // console.log(await p4);
+}
+
+console.log('----Start----');
+test();
+console.log('-----End----');
+```
+
+위 코드는 어떤 결과가 나올지 예측해 보자. 
+
+```js
+----Start----
+-----End----
+[
+  {
+    "id": 1,
+    "name": "Leanne Graham",
+    "username": "Bret",
+    "email": "Sincere@april.biz",
+    "address": {
+      "street": "Kulas Light",
+      "suite": "Apt. 556",
+      "city": "Gwenborough",
+      "zipcode": "92998-3874",
+      "geo": {
+        "lat": "-37.3159",
+        "lng": "81.1496"
+      }
+    },
+    "phone": "1-770-736-8031 x56442",
+    "website": "hildegard.org",
+    "company": {
+      "name": "Romaguera-Crona",
+      "catchPhrase": "Multi-layered client-server neural-net",
+      "bs": "harness real-time e-markets"
+    }
+  }
+]
+hello
+Success
+```
+
+여기서 중요한건, 선언할때 실행된다는 것. 
+
+아래처럼 해보자. 
+
+```js
+const p1 = fetch('https://jsonplaceholder.typicode.com/users?id=1')
+  .then((response) => {
+    response.text();
+    console.log('p1 ended');
+  });
+const p2 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('hello');
+    console.log('p2 ended');
+  }, 2000);
+});
+const p3 = Promise.resolve(
+  ( () => {
+    console.log('p3 ended')
+    return 'Success';
+  })()
+);
+```
+
+위 코드 보면 알 수 있는게, 말 그대로 선언과 동시에 실행된다. 즉, 코드 보면, 이미 p1,p2,p3를 선언할때, 실행은 다 되서 `Promise`객체를 들고있는 상태인거야. 
+
+일단, start출력하고, 첫번째 await만났을 때, 뒤에 함수 실행해놓고 나서 바로 바깥에 보고 실행시키고, 그 다음에 안으로 돌아와서 fulfilled기다리는데 뭐 이미 되있잖아? 그래서 바로 순서대로 출력하는 거지. 
+
+아래 코드 이해하면 다 이해할 수 있다. 
+
+```js
+const p1 = fetch('https://jsonplaceholder.typicode.com/users?id=1')
+  .then((response) => {
+    response.text();
+    console.log('p1 ended');
+  });
+const p2 = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    resolve('hello');
+    console.log('p2 ended');
+  }, 2000);
+});
+const p3 = Promise.resolve(
+  ( () => {
+    console.log('p3 ended')
+    return 'Success';
+  })()
+);
+
+
+async function test() {
+  console.log(await p1);
+  console.log('await p1 ended');
+  console.log(await p2);
+  console.log('await p2 ended');
+  console.log(await p3);
+  console.log('await p2 ended');
+  // console.log(await p4);
+}
+
+console.log('----Start----');
+test();
+console.log('-----End----');
+```
+
+결과는 아래와 같다. 설명해보라. 
+
+![promise18](./images/promise19.png)
+
+
+
+
+
+#### Catch문과 Finally문
+
+계속 promise가 `fulfilled`되는 경우만 생각했다. 당연히, `rejected` 되는 경우도 있지. 
+
+```js
+async function fetchAndPrint(){
+  const response = await fetch('https://jsonplaceholder.typicode.commm/users')
+  const result = await response.text();
+  console.log(result)
+}
+
+fetchAndPrint()
+```
+
+![promise20](./images/promise20.png)
+
+이 또한, rejected 상태의 promise 객체가 제대로 처리되지 않아서, 발생하는 문제. 
+
+이 문제를 해결하려면? catch를 사용했었야 했는데, 여기서는 try, catch를 사용하면된다. 
+
+이렇게 하면, 당연히 error가 생기면, 코드의 흐름이 `catch`로 넘어오게 된다. 
+
+```js
+async function fetchAndPrint(){
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.commm/users')
+    const result = await response.text();
+    console.log(result)
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+fetchAndPrint()
+```
+
+이렇게 `async/await`에서는 Promise객체가 `rejected`되는 것에 대비하자. 
+
+근데, `finally`도 있었잖아. 이것도 추가할 수 있다. 
+
+```js
+async function fetchAndPrint(){
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.commm/users')
+    const result = await response.text();
+    console.log(result)
+  } catch (error) {
+    console.log(error)
+  } finally { 
+    console.log("Finally")
+  }
+}
+
+fetchAndPrint()
+```
+
+실제로 아래처럼 해도 되네. 
+
+```js
+async function fetchAndPrint(){
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/users')
+    const result = await Promise.reject(new Error('Test'));
+    console.log(result)
+  } catch (error) {
+    console.log('This is an Error : ' + error)
+  } finally { 
+    console.log("Finally")
+  }
+}
+
+fetchAndPrint()
+```
+
+
+
+
+
+퀴즈 : 순서대로 나열하시오
+
+```js
+async function test1() {
+  const result = await Promise.resolve('success');
+  console.log(result);
+}
+
+async function test2() {
+  try {
+    const p = new Promise((resolve, reject) => {
+      setTimeout(() => { resolve('last'); }, 3000);
+    });
+    const result = await p;
+    console.log(result);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function test3() {
+  try {
+    const result = await Promise.reject('fail');
+    console.log(result);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+test1();
+console.log('JavaScript');
+test2();
+console.log('Programming');
+test3();
+```
+
+Javascript - Programming - success - fail - last
+
+**Why?**  - 일단 await만날때마다 함수 밖으로 튕겨져 나가는 것은 맞다. 그런데, 그게 계속 쌓여가잖아? 그러면, 말 그대로 await완성되는 순서대로 된다. 
+
+async 함수 안의 코드가 실행되다가 await을 만나면 await 뒤의 코드를 실행한 뒤, async 함수 외부로 코드 실행 흐름이 옮겨진다는 사실은 배웠습니다. 그런데 이 코드에서는 이전의 Promise 객체가 `fulfilled` 상태가 된 것을 미처 확인하기도 전에 다음 함수의 `await`을 만나버리죠? **이렇게 미처 그 fulfilled 상태를 확인하지 못한 여러 Promise 객체들은 나중에 그것이 fulfilled 또는 rejected 상태가 된 순서대로 그 await 문이 작업 성공 결과를 추출하거나 catch 문으로 실행 흐름이 옮겨진다고 생각하면 됩니다.** 그래서 지금 setTimeout 함수를 호출해서 가장 늦게 그 상태가 fulfilled로 확정되는 p 객체의 작업 성공 결과인 문자열 last가 가장 마지막에 출력되는 겁니다. 혹시 이해하기 어렵다면 위 코드와 비슷한 의미를 갖고 있는
+
+```jsx
+async function test1() {
+  Promise.resolve('success')
+    .then((result) => {
+      console.log(result);
+    });
+}
+
+async function test2() {
+  const p = new Promise((resolve, reject) => {
+    setTimeout(() => { resolve('last'); }, 3000);
+  });
+  p
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+}
+
+async function test3() {
+  Promise.reject('fail')
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
+}
+
+test1();
+console.log('JavaScript');
+test2();
+console.log('Programming');
+test3();
+```
+
+이 Promise Chaining 기반의 코드를 보면 됩니다. 사실 이 퀴즈는 자바스크립트에서 이루어지는 비동기 실행의 좀더 깊은 원리를 이해하면 더 쉽게 풀 수 있습니다. 이런 내용은 나중에 다른 토픽에서 다뤄보도록 합시다.
+
+
+
+예시 코드 
+
+```js
+async function showQuiz() {
+  try {
+    const response = await fetch('https://learn.codeit.kr/api/quiz');
+    const test = await response.json();
+    const yourAnswer = prompt(test.quiz);
+    if (yourAnswer.toLowerCase() === test.answer) {
+      alert(`Good Job, ${test.explanation} => Let\'s learn more with Codeit!`);
+    } else {
+      throw new Error('wrong');
+    }
+  } catch (error) {
+    if (error.message === 'wrong') {
+      alert('You need to learn JavaScript with Codeit!');
+    } else {
+      alert('Error');
+    }
+  } finally {
+    window.open('https://codeit.kr', '_blank');
+  }
+}
+
+showQuiz();
+```
+
+
+
+### Async 함수는 항상 Promise를 return한다. 
+
+```js
+async function fetchAndPrint() {
+  return 3
+}
+
+fetchAndPrint();
+```
+
+위처럼 써보고 보자. 
+
+asnyc함수가 붙어있는 지금 `fetchAndPrint`함수는 숫자 3을 작업성공 결과로 가진, `fulfilled` 상태의 `Promise`객체를 return한다. 참고로 Promise 객체는 이렇게 구성되어 있다는 것을 볼 수 있다. 
+
+![promise21](./images/promise21.png)
+
+그럼 다음 것도 해보자. 
+
+```js
+async function fetchAndPrint() {
+  return fetch('https://jsonplaceholder.typicode.com/users')
+    .then((response) => response.text())
+}
+
+fetchAndPrint();
+```
+
+얘는 그냥 대놓고 Promise객체 리턴하게 해놓은 거. 
+
+![promise21](./images/promise22.png)
+
+
+
+**그럼 이것도 규칙이 있다. 어떻게 될까? 당연히 이전에 봤던 것과 동일하겠지**
+
+**async 함수는** 그 안에서 리턴하는 값에 따라 그에 맞는 **Promise 객체를 리턴합니다.**  그런데 이때 적용되는 규칙은 우리가 이전에 ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/courses/javascript-intermediate/4374)에서 봤던 규칙들과 유사합니다.
+
+async 함수 안에서 리턴하는 값의 종류에 따라 결국 어떤 Promise 객체를 리턴하게 되는지 아래와 같이 경우를 나누어서 살펴봅시다.
+
+# 1. 어떤 값을 리턴하는 경우
+
+## (1) Promise 객체를 리턴하는 경우
+
+async 함수 안에서 Promise 객체를 리턴하는 경우에는 **해당 Promise 객체와 동일한 상태와 작업 성공 결과(또는 작업 실패 정보)를 가진 Promise 객체**를 리턴합니다.(그냥 해당 Promise 객체를 리턴한다고 봐도 괜찮습니다.)
+
+```jsx
+async function fetchAndPrint() {
+  return new Promise((resolve, reject)=> {
+    setTimeout(() => { resolve('abc'); }, 4000);
+  });
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled.png&name=Untitled.png)
+
+이렇게 **pending 상태의 Promise 객체를 리턴하기도 하고(리턴된 Promise 객체는 약 4초 후에 fulfilled 상태가 되겠죠?** 실제로, 4초 후에 보니깐, 다시 fulfilled가 되어 있다. 
+
+![promise21](./images/promise23.png)
+
+```jsx
+async function fetchAndPrint() {
+  return Promise.resolve('Success');
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%201.png&name=Untitled+1.png)
+
+이미 fulfilled 상태인 Promise 객체나
+
+```jsx
+async function fetchAndPrint() {
+  return Promise.reject(new Error('Fail'));
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%202.png&name=Untitled+2.png)
+
+이미 rejected 상태인 Promise 객체를 리턴하는 경우 전부 다 해당합니다. (위 이미지에서는 rejected 상태의 Promise 객체를 따로 처리해주지 않았기 때문에 에러가 발생한 겁니다)
+
+## (2) Promise 객체 이외의 값을 리턴하는 경우
+
+async 함수 내부에서 Promise 객체 이외에 숫자나 문자열, 일반 객체 등을 리턴하는 경우에는, **fulfilled 상태이면서, 리턴된 값을 작업 성공 결과로 가진 Promise 객체**를 리턴합니다.
+
+```jsx
+async function fetchAndPrint() {
+  return 3;
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%203.png&name=Untitled+3.png)
+
+이런 코드나
+
+```jsx
+async function fetchAndPrint() {
+  return 'Hello';
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%204.png&name=Untitled+4.png)
+
+이런 코드,
+
+```jsx
+async function fetchAndPrint() {
+  const member = {
+    name: 'Jerry',
+    email: 'jerry@codeitmall.kr',
+    department: 'sales',
+  };
+
+  return member;
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%205.png&name=Untitled+5.png)
+
+이런 코드들 모두 여기에 해당합니다.
+
+# 2. 아무 값도 리턴하지 않는 경우
+
+```jsx
+async function fetchAndPrint() {
+  console.log('Hello Programming!');
+}
+
+fetchAndPrint();
+```
+
+이렇게 함수에서 아무런 값도 리턴하지 않으면 자바스크립트에서 어떻게 간주한다고 했죠? undefined를 리턴한 것으로 간주한다고 했는데요. 따라서
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%206.png&name=Untitled+6.png)
+
+이 경우에는 **fulfilled 상태이면서, undefined를 작업 성공 결과로 가진 Promise 객체**가 리턴됩니다.
+
+# 3. async 함수 내부에서 에러가 발생했을 때
+
+```jsx
+async function fetchAndPrint() {
+  throw new Error('Fail');
+}
+
+fetchAndPrint();
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4110&directory=Untitled%207.png&name=Untitled+7.png)
+
+async 함수 안에서 에러가 발생하면, **rejected 상태이면서, 해당 에러 객체를 작업 실패 정보로 가진 Promise 객체**가 리턴됩니다.
+
+자, 이때까지 async 함수 안에서 리턴하는 값에 따라, async 함수가 결국 어떤 Promise 객체를 리턴하는지 배웠는데요.  이전에 ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/courses/javascript-intermediate/4374)에서 배운 내용과 비슷해서 별로 어렵지 않죠?  이렇게 async 함수가 결국 Promise 객체를 리턴한다는 사실은 아주 중요합니다. **왜냐하면 이 말은 곧 async 함수 안에서 다른 async 함수를 가져다가 쓸 수 있다는 뜻이기 때문입니다. 이 말이 무슨 뜻인지 다음 영상에서 알아봅시다.**
+
+
+
+
+
+**이번에는 사용자 정보 조회할때, 민감한 정보 제외하는 작업을 해보자.**
+
+`async`함수는 항상 `Promise`를 return한다.  이런 원리를 응용하면, 하나의 async안에서 또 다른 async를 사용할 수 있다. 왜냐면, async는 결국 Promise를 return하니깐, 그 앞에 `await`을 쓰면 되기 때문이다(사실 꼭 `Promise`를 리턴하지 않아도, `await`이 `Promise`로 감싸게 해서 나오기 때문에 괜찮다).
+
+![promise21](./images/promise24.png)
+
+
+
+
+
+참고로 함수표현식으로 될때는, 그 함수는 먼저 Promise고 뭐고 실행 안되네. 함수는 불러야 실행되네. 
+
+```js
+
+// 함수 표현식
+const applyPrivacyRule = function (users) {
+  console.log('1')
+  const resultWithRuleApplied = users.map((user) => {
+                                    const keys = Object.keys(user); // id, name, email, address ... 
+                                    const userWithoutPrivateInfo = {}; 
+                                    keys.forEach((key) => {
+                                                      if (key != 'address' && key != 'phone'){
+                                                        userWithoutPrivateInfo[key] = user[key]; }
+                                                    }); 
+                                    return userWithoutPrivateInfo;
+                                                    }); 
+
+  
+  const p = new Promise((resolve, reject) => {
+    setTimeout(() => {resolve(resultWithRuleApplied);}, 2000)
+  });
+  console.log('2')
+  // async가 return 하는 Promise 객체는 2초 후 fulfilled 상태가 되고, 민감한거 제거된 배열을 작업성공 결과로 갖게 된다. 
+  return p
+
+}
+
+async function getUsers(){
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/users')
+    const result = await response.text()
+    const users = JSON.parse(result);
+    console.log('3')
+    const resultWithPrivacyRuleApplied = await applyPrivacyRule(users);
+    console.log('4')
+
+    return resultWithPrivacyRuleApplied; // getUsers도 async 함수니깐, Promise를 다시 return하게 된다. 
+  } catch(error){
+    console.log(error)
+  } finally {
+    console.log('exit')
+  }
+}
+
+getUsers().then((result) => { console.log(result); })
+```
+
+
+
+
+
+#### async를 붙이는 위치
+
+자바스크립트에서 함수를 표현하는 방법에는 여러 가지가 있는데요.
+
+1. **Function Declaration(함수 선언식)**,
+2. **Function Expression(함수 표현식)**,
+3. **Arrow Function(화살표 함수)**
+
+등이 있습니다. 그리고
+
+Function Expression의 경우에는
+
+2-1. 함수에 이름이 붙어있는 Named Function Expression과  2-2. 함수에 이름이 없는 Anonymous Function Expression으로 나눌 수 있고,
+
+Arrow Function의 경우 함수 내부의 내용에 따라 더 축약(shorten)해서 나타낼 수도 있는데요.
+
+각각의 경우에 async 키워드를 어떻게 붙이는지 살펴봅시다.
+
+```jsx
+// 1) Function Declaration
+async function example1(a, b) {
+  return a + b;
+}
+
+// 2-1) Function Expression(Named)
+const example2_1= async function add(a, b) {
+  return a + b;
+};
+
+// 2-2) Function Expression(Anonymous)
+const example2_2 = async function(a, b) {
+  return a + b;
+};
+
+// 3-1) Arrow Function
+const example3_1 = async (a, b) => {
+  return a + b;
+};
+
+// 3-2) Arrow Function(shortened)
+const example3_2 = async (a, b) => a + b;
+```
+
+각 함수 표현 방식에서 async는 이런 식으로 붙이면 되는데요. 각각의 경우에 async를 어디에 붙였는지 기억해두세요.  참고로, 자바스크립트에는 함수를 정의하면서 동시에 실행하는 **즉시실행함수**(Immediately-invoked function expression, IIFE)라는 개념도 있는데요.
+
+```jsx
+(function print(sentence) {
+  console.log(sentence);
+  return sentence;
+}('I love JavaScript!'));
+
+(function (a, b) {
+  return a + b;
+}(1, 2));
+
+((a, b) => {
+  return a + b; 
+})(1, 2);
+
+((a, b) => a + b)(1, 2);
+```
+
+이런 식으로 함수를 바로 정의와 동시에 실행하는 것을 의미합니다. 보통 초기화 코드 등에서 함수를 단 한 번만 실행하기 위한 목적으로 이 즉시실행함수를 사용하는데요. 이런 경우에도 async를 이렇게 붙일 수 있습니다.
+
+```jsx
+(async function print(sentence) {
+  console.log(sentence);
+  return sentence;
+}('I love JavaScript!'));
+
+(async function (a, b) {
+  return a + b;
+}(1, 2));
+
+(async (a, b) => {
+  return a + b; 
+})(1, 2);
+
+(async (a, b) => a + b)(1, 2);
+```
+
+앞으로 여러분이 어떤 식으로 함수를 나타내더라도 어디에 async를 붙여야하는지 아시겠죠?
+
+
+
+**예시)**
+
+```jsx
+async function pick(menus) {
+  console.log('Pick random menu!');
+  const p = new Promise((resolve, reject) => {
+    if (menus.length === 0) {
+      reject(new Error('Need Candidates'));
+    } else {
+      setTimeout(() => {
+        const randomIdx = Math.floor(Math.random() * menus.length);
+        const selectedMenu = menus[randomIdx];
+        resolve(selectedMenu);
+      }, 1000);
+    }
+  });
+
+  return p;
+}
+
+async function getRandomMenu() {
+  console.log('---Please wait!---');
+  try {
+    const response = await fetch('https://learn.codeit.kr/api/menus');
+    const menus = await response.json();
+    const menu = await pick(menus);
+    console.log(`Today's lunch is ${menu.name}~`);
+  } catch (error) {
+    console.log(error.message);
+  } finally {
+    console.log('Random Menu candidates change everyday');
+  }
+}
+
+getRandomMenu();
+```
+
+기존의 코드는 이런 식으로 바꿔볼 수 있습니다. 여러분은 어떤 방식으로 바꾸셨나요?
+
+기존 코드에 존재하는 각 함수의 이름 앞에 async를 붙이고, 함수의 내부 코드에 등장하는 Promise 객체 앞에 await을 붙인다면 어렵지 않게 코드를 수정할 수 있습니다. 그리고 마지막 부분에 있던 Promise Chain 부분을 없애고, `getRandomMenu` 함수를 호출하기만 하면 되겠죠?
+
+Promise 객체의 then 메소드를 사용해서 Promise Chaining을 하던 코드를 이렇게 async/await을 쓰는 방식으로 바꾸면 훨씬 더 가독성이 좋은 코드를 작성할 수 있습니다. 그리고 이렇게 쓰는 것이 요즘의 트렌드이기도 하구요. 하지만 이렇게 코드를 바꾸더라도 그 안에 숨어있는 Promise 객체의 존재와 의미를 절대 잊지는 말아주세요!
+
+
+
+
+
+## async 함수를 작성할 때 주의해야 할 성능 문제(심화)
+
+이때까지 async 함수에 관해서 많은 내용을 배웠는데요. 그런데 async 함수의 내부 코드를 작성할 때는 특히 주의해야 하는 경우가 있습니다. 잠깐 아래의 코드를 볼까요?
+
+```jsx
+async function getResponses(urls) {
+  for(const url of urls){
+    const response = await fetch(url);
+    console.log(await response.text());
+  }
+}
+```
+
+이 `getResponses` 함수는 urls라는 파라미터로, 여러 개의 URL들이 있는 배열을 받아서, 순서대로 각 URL에 리퀘스트를 보내고, 그 리스폰스의 내용을 출력하는 함수입니다. 그런데 이 코드는 하나의 문제점이 있습니다. 그건 바로 이전 URL에 리퀘스트를 보내고 리스폰스를 받아서 출력하고 나서야, 다음 URL에 대한 리퀘스트를 보낼 수 있다는 점입니다. 즉, **순차적인 작업 처리를 한다는 점인데요**. 왜냐하면 이전 URL에 대해서 await 문이 붙은 Promise 객체가 fulfilled 상태가 될 때까지는 그 다음 URL에 대한 작업들이 시작될 수 없기 때문입니다.
+
+만약 순차적인 처리를 해야 하는 경우라면 이 코드를 사용하는 게 맞겠지만, 만약 모든 리스폰스의 내용이 잘 출력되기만 하면 되고, **그 순서는 상관없는 경우라면 어떨까요? 이 코드는 성능 관점에서 아쉬운 점이 있는 코드입니다.**
+
+만약 리스폰스의 내용의 순서가 중요하지 않은 경우라면 현재 코드를 이렇게 바꿔볼 수 있는데요.
+
+```jsx
+async function fetchUrls(urls){
+  for(const url of urls){
+    (async () => { // 추가된 부분!
+      const response = await fetch(url);
+      console.log(await response.text());
+    })(); // 추가된 부분!
+  }
+}
+```
+
+지금 각 url에 리퀘스트를 보내고 리스폰스를 받는 코드를, **별도의 즉시실행되는 async 함수**로 감싸줬는데요. 즉시실행함수는 정의와 동시에 실행되는 함수라고 ['async를 붙이는 위치'](https://www.codeit.kr/learn/4393) 노트에서 배웠죠?
+
+이렇게 코드를 고치면 일단 각 URL에 대해서 fetch 함수를 실행해서 리퀘스트를 보내는 것을 순서대로 바로 실행해버립니다. 이전 코드처럼 이전 URL에 대한 리스폰스가 오기까지를 기다렸다가 다음 URL에 리퀘스트를 보내는 게 아니라요. 이렇게 코드를 쓰면 일단 모든 URL에 대한 리퀘스트를 쭉 보내버리고, 먼저 리스폰스가 오는 순서대로 그 내용이 출력되죠.
+
+> 왜 이게 가능할까? 
+>
+> 즉시실행함수로 감싸놨는데, 이렇게 하면 일단 for loop는 이 즉시실행함수만 실행시키고 돌게 되있어. 
+>
+> 그런데, 그 즉시실행함수 내부는 async라서 비동기로 실행되고 있는 것. 도착하는데로 찍어주겠지. 
+
+리스폰스의 순서를 보장하지 않아도 되는 경우에는 이 코드가 훨씬 성능이 좋겠죠?
+
+async 함수 안에서는 무언가를 반복 처리하는 코드를 쓸 때 유의해야 합니다. 왜냐하면 **의도치 않게 순차 처리를 수행하는 비효율적인 코드를 짜는 실수를 하게 되기 쉽기 때문이죠.** 만약 **순차적인 처리가 필요한 경우가 아니라면 방금 본 것처럼 각 작업을 다시 async 함수로 묶어주면 된다는 사실, 기억해두세요!**
+
+
+
+### 두 가지 종류의 콜백(심화)
+
+이때까지 우리는 '비동기 실행'에 대해서 많은 것을 배웠습니다. 그런데 한 가지 짚고 넘어가야할 사실이 하나 있습니다. 이번 토픽에서는 나중에 실행될 작업을 처리하는 함수를 '콜백(callback)'이라고 했는데요. 그런데 이것은 콜백의 한 가지 종류일 뿐 원래 콜백이라는 단어는 더 넓은 의미를 갖고 있습니다.
+
+**자바스크립트에서 콜백은 어떤 함수의 파라미터로 전달되는 모든 함수를 의미하는 개념입니다.** 그러니까 어떤 함수의 파라미터로 전달되기만 한다면 해당 함수는 그 함수의 콜백이 되는 것입니다. 이런 콜백은
+
+**1. 동기 실행되는 콜백**과 **2. 비동기 실행되는 콜백**
+
+으로 나뉘는데요. 이번 토픽에서는 비동기 실행에 대해 자세히 설명하기 위해서 2번 관점에서만 콜백을 설명했습니다. 이때까지 우리가 본 콜백들은 모두 2번에 해당하는 콜백들이었죠.
+
+그렇다면 1번에 해당하는 콜백에는 어떤 것들이 있을까요? 예를 들어, 자바스크립트 배열의 메소드 중에서 **filter라는 메소드**를 생각해보겠습니다. 이 메소드는 배열의 여러 요소들 중에서 특정 조건을 만족하는 요소들만을 추려서 그 요소들로만 이루어진 새로운 배열을 리턴하는 메소드인데요.
+
+아래 코드를 봅시다.
+
+```jsx
+const arr = [1, 2, 3, 4, 5, 6];
+
+const newArr = arr.filter(function isOdd(num) {
+  return (num % 2 === 1); 
+});
+
+console.log(newArr); // [1, 3, 5]
+```
+
+이 코드는 `arr`라는 배열에서 **홀수**만을 추출해서 해당 홀수들만으로 이루어진 새로운 배열을 리턴합니다. `filter` 함수의 파라미터 부분을 보면 `isOdd`(홀수인가요?)라는 함수가 들어있다는 것을 알 수 있는데요. `filter` 함수는 `arr` 배열에서 각 요소를 하나씩 순회하면서 매 요소마다 isOdd 함수를 실행하고, 해당 함수가 true를 리턴하는 요소들만을 추출합니다. 여기서는 해당 숫자를 2로 나누었을 때 나머지가 1인(=홀수인) 것들만 추출한다는 뜻이겠죠?
+
+이 코드는 Arrow Function 형식으로 이렇게 간략하게 나타낼 수도 있습니다.
+
+```jsx
+const arr = [1, 2, 3, 4, 5, 6];
+
+const newArr = arr.filter((num) => num % 2);
+
+console.log(newArr); // [1, 3, 5]
+```
+
+자, 형식이 어찌되었든 이렇게 함수 안에 들어간 함수는 모두 콜백입니다.  현재 **filter 메소드 안의 콜백은 앞서 말했듯이 '동기 실행되는 콜백'**인데요.  즉, 이 콜백은 우리가 이번 토픽에서 배웠던 '비동기 실행되는 콜백'과는 달리, 아주 정직하게 순서대로 실행됩니다.
+
+filter 함수는 파라미터로 받은 콜백을, 매 요소를 순회하면서, 매 요소를 대상으로 실행합니다. 어떤 처리를 나중에 특정 조건이 만족되었을 때 남은 작업을 처리하기 위해서 사용하는 것이 아니라요.  만약 isOdd 콜백이 비동기 실행되는 콜백이었다면 그 뒤의 `console.log(newArr);`가 먼저 실행되었겠죠?
+
+이렇게 콜백에는 동기 실행되는 콜백도 있다는 점에 유의해야합니다.
+
+정리해보겠습니다. 사실 콜백이란 함수의 파라미터로 전달되는 함수를 의미하는 넓은 의미의 개념이고, 이때 그것이
+
+1. 동기 실행되는지
+2. 비동기 실행되는지
+
+에 따라 두 종류로 나뉘는 겁니다. 이번 토픽에서는 비동기 실행에 집중된 개념 설명을 위해 2번의 경우가 마치 콜백의 전부인 것처럼 설명했지만, 사실은 **동기 실행되는 콜백도 있다는 점**을 기억해주세요.
+
+그렇다면 2. 비동기 실행되는 콜백은 어떤 원리로 비동기 실행되는 걸까요? 이제 자바스크립트에서 비동기 실행되는 코드가 있다고 할 때, 각 줄의 코드가 어떤 순서로 실행되는지는 알게 되었습니다. 그렇다면 동기 실행, 비동기 실행 이런 것들은 자바스크립트 실행 환경에서 실제로 어떻게 구현되고 있는 걸까요? 이런 내용은 기회가 된다면 다른 토픽에서 다뤄보도록 합시다.
