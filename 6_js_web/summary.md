@@ -4,6 +4,12 @@
 
 [비동기 실행과 Promise 객체](#비동기 실행과 Promise 객체)
 
+[Catch Method](#Catch Method) 
+
+[Finally Method](#Finally) 
+
+[Axios](#Axios )
+
 ### Fetch 사용해보기
 
 `개발자도구 - console`에서 아래 요청 보내보기
@@ -2317,3 +2323,1303 @@ A는 호출된 then 메소드의 주인에 해당하는, 이전 Promise 객체�
 Promise 객체 공부는 then 메소드가 그 처음과 끝이라고 해도 될 정도로, then 메소드를 정확하게 이해하는 것은 중요합니다. 지금 각각의 케이스를 잘 기억해두면, 앞으로의 내용을 훨씬 더 쉽게 이해할 수 있을 겁니다.
 
 *참고로 코드잇 실행기는 웹 브라우저와는 조금 다른 Node.js라는 자바스크립트 실행 환경을 사용하기 때문에 출력되는 에러의 내용이 웹 브라우저에서와 달리 조금 더 장황한 내용일 수 있습니다. 이 점을 참고해주세요.
+
+잘 봐야 하는게, **아래 URL틀리게 하고 실행해보면,** 결과가 다음과 같다. 아래 두 가지 케이스 모두 마찬가지. 
+
+error부분이 실행 되었지만, 어쨋든 결과적으로 console.log라서 리턴하는 값이 없는 것. `fulfilled`와 `undefined`가 리턴된 것. 
+
+```js
+fetch('https://jsonplaceholder.typicode.commm/users')
+  .then((response) => response.text, (error) => { console.log("Hi" + error)} )
+  .then((result) => { console.log("Success!")}, (error) => { "Bye" + console.log(error) }); 
+```
+
+```js
+fetch('https://jsonplaceholder.typicode.commm/users')
+  .then((response) => response.text)
+  .catch((error) => { console.log("Hi" + error)} )
+  .then((result) => { console.log("Success!")}, (error) => { "Bye" + console.log(error) }); 
+```
+
+![promise16](./images/promise16.png)
+
+
+
+
+
+## Catch Method
+
+Promise 객체가 rejected가 될때 실행하고 싶은 콜백은 then메서드의 두번째 파라미터로 넣으면 된다. 그런데, 그 방법 말고 다른 방법도 있다. `Catch` 메소드를 사용하면 된다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text)
+  .catch((error) => { console.log(error)} )
+  .then((result) => { }, (error) => { console.log(error) }); 
+```
+
+지금 위에 들어간 `catch`는 Promise객체가 rejected가 되면 실행할 콜백을 등록하는 메서드. 
+
+그런데, Catch메서드에서 중요한 부분이 있다. 사실 catch메서드는 then메서드를 약간 변형시킨 것에 불과하다. 아래와 똑같은 것. 즉, Catch메서드는 두번째 콜백만 넣은 `then`메서드에 불과하다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.commm/users')
+  .then((response) => response.text)
+  .then( undefined, (error) => { console.log("Hi" + error)})
+  .then((result) => { console.log("Success!")}, (error) => { "Bye" + console.log(error) }); 
+```
+
+```jsx
+// Internet Disconnected
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .catch((error) => { console.log(error); })
+  .then((result) => { console.log(result); });
+```
+
+이전 영상에서는 다음과 같은 catch 메소드를 봤습니다. 그런데 **어떻게 fetch 함수에서 발생한 에러가 catch 메소드 안의 콜백에까지 전달될 수 있는 걸까요?** 사실 이 내용은 이전의 ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/4374)를 잘 읽었다면 바로 이해할 수 있는 내용인데요. 지금 이 코드를 이렇게 수정해볼게요.
+
+
+
+
+```jsx
+// Internet Disconnected
+
+fetch('https://jsonplaceholder.typicode.com/users') // Promise-A
+  .then((response) => response.text()) // Promise-B
+  .then(undefined, (error) => { console.log(error); }) // Promise-C
+  .then((result) => { console.log(result); }); // Promise-D
+```
+
+catch 메소드는 사실 then 메소드의 첫 번째 인자로 undefined을 넣은 것과 같다고 했죠? 그래서 catch 메소드를 then 메소드로 변환해봤습니다. 이 코드에서 fetch 함수와 각각의 then 메소드가 리턴하는 Promise 객체를 순서대로 Promise-A, B, C, D라고 합시다. 그리고 각각의 Promise의 상태가 어떻게 변하는지 살펴봅시다.
+
+일단 fetch 함수의 작업이 실패해서 Promise-A 객체가 rejected 상태가 되면, 첫 번째 then 메소드의 두 번째 콜백이 실행되어야 합니다. 하지만 지금 첫 번째 then 메소드에는 두 번째 콜백이 없기 때문에 아무 콜백도 실행되지 않는데요. 이런 경우에는 어떻게 된다고 했죠? **Promise-B 객체가 Promise-A와 똑같은 rejected 상태가 되고, 동일한 작업 실패 정보를 갖게 됩니다!** 혹시 기억이 안 나면 ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/4374)에서 **4. 아무런 콜백도 실행되지 않을 때** 부분을 보고 와주세요.
+
+그럼 이제 rejected 상태가 된 Promise-B에 붙은 then 메소드에는 두 번째 콜백이 있기 때문에 이 두 번째 콜백이 실행됩니다. 즉, catch 메소드의 콜백이 실행되는 거죠. 어떻게 fetch 함수의 에러가 catch 메소드의 콜백에까지 전달될 수 있는지 이제 아시겠죠? then 메소드의 작동 원리만 잘 기억하고 있다면 딱히 어려운 내용은 아닙니다.
+
+자, 그럼 보너스 문제를 하나 드릴게요. 이 코드를 실행하면 최종적으로 무엇이 출력될까요?
+```jsx
+// Internet Disconnected
+
+fetch('https://jsonplaceholder.typicode.com/users') // Promise-A
+  .then((response) => response.text()) // Promise-B
+  .then(undefined, (error) => { console.log(error); }) // Promise-C
+  .then((result) => { console.log(`Quiz: ${result}`); }); // Promise-D 
+```
+
+방금 전과 동일한 코드이고, 대신 마지막 console.log에 `Quiz:`라는 단어가 붙어있습니다. 이 단어 옆의 result로 무엇이 출력되는지가 문제인데요. 코드를 실행해보면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4378&directory=Untitled.png&name=Untitled.png)
+
+undefined가 출력되네요. 왜 그런 걸까요?
+
+catch 메소드는 사실 then 메소드라고 했으니까 이것을 기억하면 이해할 수 있습니다. 지금 catch 메소드 안의 콜백이 실행되었을 때 무슨 값을 리턴했나요? 아무 값도 리턴하지 않았는데요. 이렇게 자바스크립트에서는 아무 값도 리턴하지 않은 경우에는 undefined를 리턴한 것으로 간주한다고 했었죠? 따라서 ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/4374)에서 배운 것처럼 catch 메소드가 리턴한 **Promise 객체는 fulfilled 상태가 되면서, undefined를 작업 성공 결과로 가지게 되는 겁니다.** 그래서 그 뒤의 then 메소드의 콜백의 파라미터로 undefined가 넘어가서 undefined가 출력된 겁니다.
+
+> 나는 undefined 써있길래, 그게 아예 콜백이 없는건 줄 알았는데, 콜백이 있는데 return이 없는 것으로 간주되네. 
+
+이렇게 결국 catch 메소드도 then 메소드의 실행 원리를 정확히 알아야 잘 해석할 수 있습니다. 혹시 이번 노트의 내용이 잘 이해가 되지 않는 분들이 있다면, ['then 메소드 완벽하게 이해하기' 노트](https://www.codeit.kr/learn/4374)를 보고 와주세요.
+
+
+
+#### Catch메소드는 마지막에 씁니다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.commm/users')
+  .then((response) => response.text)
+  .catch((error) => { console.log("Hi" + error)})
+  .then((result) => { console.log("Success!")}, (error) => { "Bye" + console.log(error) }); 
+```
+
+만약 catch메서드 뒤의 콜백에서 에러가 발생하면 어떻게 될까?
+
+아래처럼 인위적으로 `Error`를 발생시켜 보자. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .catch((error) => { console.log("Hi" + error)})
+  .then((result) => { 
+    console.log(result);
+    throw new Error('test');
+  }); 
+```
+
+`fetch`함수는 정상실행 되어서, 다 왔고 문제 없는데, 마지막 then에서 에러를 실행하도록 되어있네. 
+
+![promise17](./images/promise17.png)
+
+이 에러를 잡을 수가 없다. 이 마지막 then메서드 앞에서 에러가 발생하면, 이 then이 리턴하는 Promise객체는 rejected객체가 되면서, 작업실패정보를 가지고 있게 된다. 
+
+**이 문제를 해결할 수 있는 방법은? Catch메서드를 가장 아래로 내리는 것.**
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { 
+    console.log(result);
+    throw new Error('test');
+  })
+  .catch((error) => { console.log("Hi there!" + error)});
+```
+
+이렇게 하면, fetch가 실패해서 발생한 에러이든, 아래서 인위적으로 발생시킨 에러이든 상관없이 모두 대응이 가능하다. 
+
+실무에서도 보통 Catch메서드를 이렇게 맨 마지막에 쓴다. 
+
+응용해서, 어디서 발생한 에러인지 확인해보자. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((result) => {
+    console.log(result);
+    // throw new Error('too long');
+  })
+  .then((result) => {
+    console.log(result);
+    // throw new Error('no required field');
+  })
+  .catch((error) => {
+    console.log(`${error.name}: ${error.message}`);
+  });
+```
+
+
+
+
+catch 메소드 이전에 존재하는 4개의 Promise 객체를 순서대로 하나씩 rejected 상태로 만들어봅시다. 하나의 Promise 객체를 rejected 상태로 만들기 전에 다른 Promise 객체는 fulfilled 상태가 되게끔 다시 수정해줘야 합니다. 이 점에 주의하고 아래 내용을 읽어보세요.
+
+**1. 첫 번째 Promise 객체 rejected 상태로 만들기**
+
+```jsx
+fetch('https://jsonplaceholder.typicode.commmm/users')
+...
+  .catch((error) => {
+    console.log(`${error.name}: ${error.message}`);
+  });
+```
+
+존재하지 않는 URL을 fetch 함수의 파라미터에 전달하면, fetch 함수의 작업이 실패하고 fetch 함수가 리턴한 Promise 객체의 상태도 rejected 상태가 될 것입니다. 이렇게 고치고 코드를 실행해보면
+
+```
+FetchError: request to https://jsonplaceholder.typicode.commmm/users failed, reason: getaddrinfo ENOTFOUND jsonplaceholder.typicode.commmm
+```
+
+이런 에러 메시지가 출력됩니다. URL 주소에 문제가 있어서 리퀘스트를 보낼 수 없다는 내용이죠?
+
+**2. 두 번째 Promise 객체 rejected 상태로 만들기**
+
+```jsx
+fetch('https://google.com')
+  .then((response) => response.json())
+...
+  .catch((error) => {
+    console.log(`${error.name}: ${error.message}`);
+  });
+```
+
+response.json()에서 에러가 나게 하려면 어떻게 해야할까요? JSON 말고 다른 타입의 데이터를 리스폰스의 바디에 담아서 보내주는 URL로 리퀘스트를 보내면 되겠죠? fetch 함수의 URL에 HTML 코드 등을 리스폰스로 주는 구글 홈페이지 URL을 입력하고 실행해보겠습니다. 실행해보면
+
+```
+FetchError: invalid json response body at https://www.google.com/ reason: Unexpected token < in JSON at position 0
+```
+
+이런 에러 정보가 출력됩니다. '유효하지 않은 JSON 리스폰스 바디'라는 에러 메시지를 볼 수 있네요.
+
+**3. 세 번째 Promise 객체 rejected 상태로 만들기**
+
+```jsx
+...
+  .then((result) => {
+    console.log(result);
+    throw new Error('too long');
+  })
+...
+  .catch((error) => {
+    console.log(`${error.name}: ${error.message}`);
+  });
+```
+
+여기서부터는 인위적으로 에러 객체를 throw하는 부분인데요.  에러 객체를 throw하는 기존 코드의 주석을 해제해주면 됩니다. 그리고 코드를 실행하면
+
+```
+  [리스폰스의 내용]
+  Error: too long
+```
+
+앞 부분에 리스폰스의 내용이 잘 출력되고, 그 뒤에 에러 정보가 출력됩니다.
+
+**4. 네 번째 Promise 객체 rejected 상태로 만들기**
+
+```jsx
+...
+  .then((result) => {
+    throw new Error('no required field');
+  })
+  .catch((error) => {
+    console.log(`${error.name}: ${error.message}`);
+  });
+```
+
+3번과 마찬가지로 에러 객체를 throw 하는 부분을 주석 해제하고 실행해보면
+
+```
+  [리스폰스의 내용]
+  Error: no required field 
+```
+
+앞 부분에 리스폰스의 내용이 잘 출력되고, 그 뒤에 에러 정보가 출력됩니다.  
+ 방금 한 것처럼 catch 메소드에서는 콜백으로 전달된 **Error 객체를 조사함으로써 Promise Chain 중 어디에서 문제가 발생했는지 판단**할 수 있습니다.  만약 필요하다면 예를 들어, 이런 식으로
+
+```jsx
+...
+  .catch((error) => { 
+    if(error.message === 'A'){
+
+    }else if(error.message === 'B'){
+
+    }else if(error.message === 'C'){
+
+    }else{
+
+    }
+  });
+```
+
+각 에러마다 적합한 작업(로깅, 회복 작업 등)을 나누어서 처리해줄 수도 있겠죠? (실전에서는 좀더 깔끔한 방식으로 저 부분을 함수로 따로 만들든지 할 겁니다.)
+
+그리고 이번 실습에서는 에러 객체를 만들기 위해 단순히 `new Error`를 했지만,  여러분이 자바스크립트로 나만의 에러 객체(Custom Error)를 만드는 방법을 알게 되면
+
+```jsx
+...
+  .catch((error) => { 
+    if(error instanceof TypeError){
+
+    }else if(error instanceof CustomErrorType_A){
+
+    }else if(error instanceof CustomErrorType_B){
+
+    }else{
+
+    }
+  });
+```
+
+이런 식으로 파라미터로 넘어온 에러 객체에 **instanceof라는 연산자**를 붙여서 어느 타입의 에러 객체인지를 좀더 세련된 방식으로 확인할 수 있습니다. 이 내용은 Custom Error 객체를 만드는 방법에 대해 공부하고 나서 다시 살펴보세요.
+
+
+
+#### Catch메서드를 여러개 쓰는 이유
+
+우리는 이제 catch 메소드를 Promise Chain 가장 마지막에 붙임으로써, 중간에 에러가 발생해서 어느 Promise 객체가 rejected 상태가 되더라도 항상 대처할 수 있도록 해야 한다는 걸 배웠습니다. 하지만 catch 메소드를 마지막뿐만 아니라 Promise Chain 중간중간에 쓰는 경우도 존재합니다. **만약 중간에 에러가 발생해도 catch 메소드가 그 대안을 뒤로 넘겨줄 수 있으면 catch 메소드를 중간에 써도 되는데요.**
+
+아래 코드를 잠깐 봅시다.
+
+```jsx
+fetch('https://friendbook.com/my/newsfeeds')
+  .then((response) => response.json()) // -- A
+  .then((result) => { // -- B
+    const feeds = result;
+    // 피드 데이터 가공...
+    return processedFeeds; 
+  })
+  .catch((error) => { // -- C
+    // 미리 저장해둔 일반 뉴스를 보여주기  
+    const storedGeneralNews = getStoredGeneralNews();
+    return storedGeneralNews;
+  })
+  .then((result) => { /* 화면에 표시 */ }) // -- D
+  .catch((error) => { /* 에러 로깅 */ }); // -- E
+```
+
+이 코드는 어떤 SNS 웹 사이트에서 **나에게 최적화된 뉴스피드(newsfeed)**를 보여주는 코드라고 가정해봅시다. 만약 서버로부터 뉴스피드가 잘 조회되면 현재 코드에서 **A, B, D 줄에 있는 콜백들**이 잘 실행되고, 사용자에게 뉴스피드가 잘 표시되겠죠? 하지만 만약 사용자의 컴퓨터가 인터넷에 연결되어 있지 않은 상태라서 fetch 함수의 작업이 실패한다면 어떻게 될까요? 그럼 이제 이 Promise Chain의 작업은 실패했다고 생각하고, 이전에 배운 것처럼 그냥 마지막에만 catch 메소드를 두고 끝내면 되는 걸까요? 꼭 그렇지는 않습니다. 만약 작업을 살릴 수 있는 방법이 있다면 살리는 게 좋겠죠?
+
+지금 **C줄에 있는 콜백**을 보세요. fetch 함수의 작업이 실패하면 C 줄의 콜백이 실행됩니다. 사실, 이 SNS 서비스의 웹 페이지에서는 사용자가 매번 뉴스피드를 볼 때마다, 나중에 오프라인 상태가 될 때를 대비해서 모든 사람이 공통으로 볼 수 있는, 텍스트로만 이루어진 **최근 일반 뉴스 데이터**를 갱신해서 웹 브라우저에 저장한다고 해봅시다. C줄의 콜백은 바로 이렇게 저장해둔 일반 뉴스 데이터를 그대로 가져오는 기능을 합니다. **이렇게 되면 인터넷이 안 되는 상황에서도 나만을 위한 최적화된 뉴스피드는 못 보지만 일반적인 세상 뉴스는 사용자가 볼 수 있게 되겠죠?**
+
+이렇게 Promise Chain 중에서 **비록 에러가 발생했다고 해도 만약 실패한 작업 대신 다른 방법을 통해서 작업을 정상적으로 끝마칠 수 있는 상황이라면 catch 메소드를 중간에 사용하기도 합니다.** 그러니까 Promise Chain 중에서 단 하나의 작업이라도 실패하면 전체 작업이 실패했다고 봐도 되는 경우에는 그냥 Promise Chain 마지막에만 catch 메소드를 써주면 되겠지만, 어떤 작업들은 에러가 발생하더라도 다른 방식으로 복구해서 살려낼 방법이 있다면 catch 메소드 안의 콜백에서 그런 복구 작업을 해주면 되는 겁니다. 지금 위 코드에서는 미리 저장해둔 일반 뉴스 데이터를 구해오는 `getStoredGeneralNews` 함수를 실행하는 것처럼요.
+
+catch 메소드를 Promise Chain의 마지막에 늘 써줘야 하는 것은 맞지만, 작업을 살릴 방법이 있다면 Promise Chain 중간에 catch 메소드를 써도 된다는 사실, 잘 기억해두세요.
+
+
+
+
+
+# Finally
+
+Promise객체가 `fulfilled` or `rejected`와 상관없이 항상 실행하고 싶은 콜백이 있으면, finally에 등록하면 된다. 
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((result) => { console.log(result)})
+  .catch((error) => { console.log(error)} )
+  .finally(() => {console.log('exit')})
+```
+
+`finally`는 작업성공/실패 결과가 필요하지 않기 때문에 딱히 파라미터가 필요가 없다. 
+
+심지어 `catch`에서 에러가 발생해도 `finally`는 실행된다.  
+
+```js
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((result) => { console.log(result)})
+  .catch((error) => { 
+    console.log(error)
+    throw new Error('from catch method')
+  })
+  .finally(() => {
+      console.log('exit')}
+    )
+```
+
+예시)
+
+```js
+let isLoading = true;
+
+/* ..다른 코드들 */
+
+const url = 'https://jsonplaceholder.typicode.com/users';
+// const url = 'https://www.google.com';
+
+fetch(url)
+  .then((response) => {
+    const contentType = response.headers.get('content-type');
+    if (contentType.includes('application/json')) {
+      return response.json();
+    }
+    throw new Error('response is not json data');
+  })
+  .then((result) => {
+    // 리스폰스 처리
+    console.log(result);
+  })
+  .catch((error) => {
+    // 에러 처리
+    console.log(error);
+  })
+  .finally(() => {
+    isLoading = false;
+    console.log(isLoading);
+  });
+
+/* ..다른 코드들 */
+
+```
+
+중요한 퀴즈
+
+아래처럼 코드가 써있다면, 어떻게 출력될까?
+
+```js
+fetch('https://www.error.www')
+  .then((response) => response.text()) // rejected콜백이 없음. 위에꺼 그대로 내려가
+  .then((result) => { console.log(result); }) // rejected콜백이 없음. 위에꺼 그대로 내려가
+  .catch((error) => { console.log('Hello'); throw new Error('test'); }) // Hello찍고, rejected + Error정보 갖는 Promise가 내려간다. 
+  .then((result) => { console.log(result); }) // rejected콜백이 없음. 위에꺼 그대로 내려가
+  .then(undefined, (error) => { }) // fulfilled + undefined Promise가 내려간다. 
+  .catch((error) => { console.log('JS'); }) // fulfilled 콜백이 없어 그대로 내려가
+  .then((result) => { console.log(result); }) // Undefined 찍는다. 
+  .finally(() => { console.log('final'); }); // final 찍는다. 
+```
+
+
+
+#### Promise 객체는 왜 추가되었을까?
+
+이때까지 우리는 Promise Chaining, then/catch/finally 메소드 등 Promise 객체에 관한 많은 것들을 배웠습니다. 그런데 여기서 궁금한 점이 하나 있습니다. Promise 객체는 왜 등장한 걸까요?
+
+사실 Promise 객체가 등장하기 전에도 비동기적인 처리를 할 수 있는 방법은 있었습니다.  이전 노트에서 배운 setTimeout 함수나, addEventListener 메소드처럼요.
+
+```jsx
+setTimeout(callback, milliseconds);
+addEventListener(eventname, callback);
+```
+
+이것들은 모두 직접 파라미터에 콜백을 전달하는 형식으로 정의되어 있는데요. 만약 fetch 함수를 이런 식으로 만들었다면
+
+```jsx
+fetch('https;//first.com', callback)
+```
+
+fetch 함수도 이런 식으로 사용했었겠죠? 그런데 왜 이런 방법이 선택되지 않고, 굳이 Promise 객체라는 문법이 도입된 것일까요?  그 이유는 바로 함수에 콜백을 직접 넣는 형식은 **콜백 헬(callback hell)**이라고 하는 문제를 일으킬 수도 있기 때문입니다.
+
+잠깐 이 코드를 봅시다. 만약 fetch 함수가 지금과 같이 Promise 객체를 리턴하는 게 아니라 setTimeout 함수처럼 콜백을 직접 집어넣는 형식의 함수였다면 우리는 여러 비동기 작업을 순차적으로 수행해야할 때
+
+```jsx
+fetch('https://first.com', (response) => {
+  // Do Something
+  fetch('https://second.com', (response) => {
+    // Do Something
+    fetch('https;//third.com', (response) => {
+      // Do Something
+      fetch('https;//fourth.com', (response) => {
+        // Do Something
+      });
+    });
+  });
+});
+```
+
+이런 식의 코드를 작성해야 했을 겁니다. 지금 fetch 함수 안의 콜백에 fetch 함수가 있고 그 함수의 콜백 안에 fetch 함수가 있고 또.. 계속 이런 식으로 들어가있죠? 그런데 이 코드를 보면 어떤 느낌이 드시나요? 뭔가 읽기 어렵고 복잡해 보이죠? 한마디로 **가독성이 떨어집니다.** 그나마 지금은 실제 코드가 들어가야 할 자리에 "// Do Something" 이라는 주석이 들어가 있어서 괜찮지만, 실제로 필요한 코드들까지 들어가게 되면 이 코드의 가독성은 현저하게 떨어지게 되는데요. 이런 현상을 **콜백 지옥 또는 콜백 헬(callback hell)**이라고 합니다. 또는 지옥의 피라미드(Pyramid of Doom)라고도 합니다.
+
+하지만 우리가 배웠던 대로 fetch 함수는 Promise 객체를 리턴하기 때문에
+
+```jsx
+fetch('https://first.com')
+  .then((response) => {
+    // Do Something 
+    return fetch('https://second.com');
+  })
+  .then((response) => {
+    // Do Something 
+    return fetch('https://third.com');
+  })
+  .then((response) => { 
+    // Do Something 
+    return fetch('https://third.com');
+  });
+```
+
+이런 식으로 Promise Chaining을 해서 좀 더 깔끔한 코드로 여러 비동기 작업을 순차적으로 처리할 수 있는데요.  이렇게 **Promise 객체를 사용하면 callback hell 문제를 해결할 수 있습니다.**
+
+이 뿐만 아니라 기존에 콜백을 직접 넣는 방식에 비해 Promise 객체의 문법은 비동기 작업에 관한 좀 더 세밀한 개념들이 반영되어 있습니다. 이전의 방식에서는 콜백에 필요한 인자를 넣어주고 실행하면 되는 단순한 방식이었다면, Promise 객체 문법에는 pending, fulfilled, fulfilled 상태, 작업 성공 결과 및 작업 실패 정보(이유), then, catch, finally 메소드 등과 같은 비동기 작업에 관한 보다 정교한 설계가 문법 자체에 반영되어 있다는 것을 알 수 있습니다.
+
+바로 이렇게 Promise 객체라는 개념은,
+
+(1) **callback hell 문제를 해결**하고, 이에 더해서  (2) **비동기 작업 처리**에 관한 좀 더 세밀한 처리를 자바스크립트 문법 단에서 해결하기 위해 등장했고,
+
+그 유명한 **자바스크립트의 2015년도 표준인 ES6(=ES2015)**에 추가되었습니다.
+
+오늘날 Promise는 자바스크립트 비동기 실행에 있어서 아주 핵심적인 문법입니다. 나머지 내용도 열심히 공부해서 Promise를 마스터해봅시다.
+
+
+
+
+
+
+
+```js
+function removeUnnecessaryInfo(users) {
+  const processedUserList= users.map((user) => {
+    const keys = Object.keys(user);
+    const processedUser = {};
+    keys.forEach((key) => {
+      if (key === 'name' || key === 'email') {
+        processedUser[key] = user[key];
+      }
+    });
+    return processedUser;
+  });
+  const p = new Promise((resolve) => {
+    setTimeout(() => { resolve(processedUserList); }, 1000); 
+  });
+  return p;
+}
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.json())
+  .then((result) => removeUnnecessaryInfo(result))
+  .then((result) => {
+    console.log(result);
+  })
+  .catch((error) => {
+    console.log(error);
+  })
+  .finally(() => {
+    console.log('This job will be done by server soon!');
+  });
+```
+
+Promise Chaining을 할 때는
+
+(1) 각 비동기 작업을 순차적으로 처리하기 위해서 실행할 콜백들을 **then** 메소드들로 앞에서 설정해주고,  (2) 그 뒤에 **catch** 메소드를 사용해서, Error 발생으로 인해 어느 Promise 객체가 rejected 상태가 되더라도 대응할 수 있어야합니다.  (3) 그리고 가장 마지막에 **finally** 메소드를 사용해서 전체 작업이 성공했든, 중간에 실패했든, 심지어 catch 메소드의 콜백에서조차 에러가 발생했든  항상 실행해야 할 콜백을 등록하면 되구요.
+
+Promise Chain에서 각 메소드의 전형적인 등장 순서를 잘 기억해두세요.
+
+**이 실습에서는 크게 2가지 사실을 알려드리고 싶은데요.**
+
+일단 지금 finally 메소드의 콜백에서 출력되는 문구를 보면 'This job will be done by server soon!'이라고 써있죠?  '이 작업은 곧 서버에서 처리될 겁니다'라는 뜻인데요.
+
+사실 이번 실습에서 유저 정보를 처리한 것처럼 이렇게 어떤 데이터에 관한 처리를 프론트엔드에서 해야하는지 백엔드에서 해야하는지는 개발자들의 고민 중 하나이기도 합니다. 민감한 정보가 아닌 경우에는 사실 웹 프론트엔드에서 이번 실습처럼 받은 데이터를 처리해서 보여줘도 되고, 애초에 서버쪽에서부터 name과 email 프로퍼티만 있는 유저 정보 배열을 주는 방법도 있겠죠?
+
+하지만 개발은 나 혼자 하는 것이 아닙니다. 같은 기능을 추가하거나 수정한다고 해도, 프론트엔드 부분이 더 늦게 완성되기도 하고, 백엔드 부분이 더 늦게 완성되기도 하는데요. 만약 백엔드 부분이 너무 늦게 완성되는 경우라고 가정하면, 이런 경우에도 서비스는 고객들에게 제공되어야 하기 때문에 이런 식의 임시 코드가 필요할 때도 있습니다. 방금 저 문구를 보니까 아마 최종적으로 이 서비스에서는 이런 처리를 백엔드 쪽에서 해서 아예 깔끔한 데이터를 주는 것으로 변경될 것 같네요. 이렇게 어떤 데이터에 대한 처리를 프론트엔드에서 할지 백엔드에서 할지 결정하는 것이 개발자들의 고민 중 하나라는 것도 작은 상식으로 기억해주세요.
+
+자, 그 다음으로 주목해야할 것은 코드 중에 있는 이 부분입니다.
+
+```jsx
+...
+const p = new Promise((resolve) => {
+    setTimeout(() => { resolve(usersUnnecessaryInfo); }, 1000);
+  });
+  return p;
+...
+```
+
+이 코드는 무슨 의미를 가진 코드일까요? 이 코드는 사실 Promise 객체를 직접 생성하는 코드입니다! 이때까지 우리는 fetch 함수가 리턴하는 Promise 객체, then 메소드가 리턴하는 Promise 객체를 사용만 해왔지, 직접 Promise 객체를 만들어본 적은 없는데요. 이게 무슨 말인지 바로 다음 영상에서 배워봅시다.
+
+
+
+
+
+
+
+# 직접 만들어보는 Promise 객체
+
+지금까지는 다른 함수(예, `then`)가 리턴하는 Promise객체를 가져다가 썼음. 그런데, 직접 Promise 객체를 생성하는 것도 가능하다. 이번에는 직접 만들어 보자. 이게 바로 Promise 객체 만들 수 있는 방식. 
+
+```js
+const p = new Promise((resolve, reject) => {
+    
+});
+```
+
+아래 함수는 Promise 객체가 생성될 때, 자동으로 생성되는 함수. 
+
+```js
+(resolve, reject) => {
+    
+}
+```
+
+이 함수를 더 전문적인 단어로 Executor함수라고 부른다. 
+
+`resolve` : 생성될 Promise 객체를 `fulfilled` 상태로 만들 수 있는 함수가 연결된다. 
+
+`reject` : 생성될 Promise 객체를 `rejected` 상태로 만들 수 있는 함수가 연결된다. 
+
+resolve 추가해보자. 
+
+```js
+
+const p = new Promise((resolve, reject) => {
+  setTimeout(() => { resolve('success'); }, 2000);
+});
+
+```
+
+2초 후에 resolve함수로 연결된 함수를 실행하도록 했다. `resolve`함수는 Promise객체를 fulfilled로 만드는 함수. 
+
+그니깐, 지금 `p` 라는 Promise객체가 2초 후에 fulfilled 상태가 된다는 뜻. 그리고, 이때 resolve 안에 넣은 'success'는 당연히 **작업성공결과**가 된다. 
+
+아래 예시를 보자. 
+
+```js
+
+const p = new Promise((resolve, reject) => {
+  setTimeout(() => { 
+    resolve('Success'); }, 2000);
+});
+
+p.then((result) => {
+  console.log(result) 
+  }
+)
+```
+
+2초 후에, p라는 Promise 객체가 `fulfilled`로 바뀌면서, 'Success'라는 작업성공결과 갖게 만들어 놓은 것. 
+
+이번에는 reject로 만들어 보자. 
+
+```js
+
+const p = new Promise(
+    (resolve, reject) => {
+            setTimeout(() => { 
+              reject('Fail'); }, 3000)
+            })
+            
+p.then((result) => { console.log(result) }, 
+        (error) => {console.log(error) }
+)
+```
+
+[Promise can only be resolve once.](https://stackoverflow.com/questions/46416433/how-to-resolve-a-promise-multiple-times) 
+
+
+
+
+
+```
+
+
+const p = new Promise(
+    (resolve, reject) => {
+            setTimeout(() => { 
+              resolve('Success'); }, 2000),
+
+            setTimeout(() => { 
+              reject('Fail'); }, 3000)
+            })
+            
+p.then((result) => {
+  console.log(result) 
+  }
+)
+```
+
+
+
+이전 영상에서는 직접 Promise 객체를 만드는 방법을 배웠습니다. 그럼 언제 이런 식으로 Promise 객체를 직접 만들게 되는 걸까요? 다양한 경우들이 있지만, **전통적인 형식의 비동기 실행 함수를 사용하는 코드를, Promise 기반의 코드로 변환하기 위해** Promise 객체를 직접 만드는 경우가 많습니다. 각각의 예시를 통해 이게 무슨 말인지 이해해봅시다.
+
+# 1. setTimeout 함수 예시
+
+예를 들어 이런 wait이라는 함수가 있다고 합시다.
+
+```jsx
+function wait(text, milliseconds) {
+  setTimeout(() => text, milliseconds);
+}
+```
+
+wait 함수는 특정 밀리세컨즈만큼 시간이 지난 후에 text 파라미터로 전달받은 값을 리턴하는 함수입니다. 지금 보이는 setTimeout 함수는 이전에 ['알아야하는 비동기 실행 함수들' 노트](https://www.codeit.kr/learn/courses/javascript-intermediate/4366)에서 배웠었죠? 이 wait 함수를 Promise Chaining 코드에서 사용해볼게요.
+
+```jsx
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => { console.log(result); });
+```
+
+바로 이 Promise Chaining 코드에 wait 함수를 추가해볼 건데요. 이렇게 써보겠습니다.
+
+```jsx
+function wait(text, milliseconds) {
+  setTimeout(() => text, milliseconds);
+}
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => wait(`${result} by Codeit`, 2000)) // 2초 후에 리스폰스의 내용 뒤에 'by Codeit' 추가하고 리턴
+  .then((result) => { console.log(result); });
+```
+
+기존 코드에 두 번째 then 메소드를 추가하고, 그 안에서 wait 함수를 호출했습니다. 이렇게 쓰면 2초 후에 리스폰스의 내용 뒤에 by Codeit이라는 문구를 붙여서 출력될 것 같은데요. 정말 그렇게 되는지 확인해봅시다.
+
+코드를 실행해보면,
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4388&directory=Untitled.png&name=Untitled.png)
+
+**리스폰스의 내용과 by Codeit이 출력되지 않았습니다. 그 대신 undefined가 출력되었는데요.**
+
+왜 그런 걸까요?  그 이유는 바로 wait 함수에 있습니다.
+
+```jsx
+function wait(text, milliseconds) {
+  setTimeout(() => text, milliseconds);
+}
+```
+
+이 wait 함수는 내부에서 **setTimeout 함수를 호출**합니다. 그리고 **setTimeout 함수의 첫 번째 파라미터로 들어간 콜백이 2초 후에 text를 리턴**하죠. 그런데 여기서 혼동하면 안 되는 것은 **wait 함수가**
+
+```jsx
+...
+  .then((result) => { return wait(`${result} by Codeit`, 2000); })
+...
+```
+
+**이 두 번째 then 메소드 안의 콜백에서 실행될 때,**
+
+**wait 함수는 setTimeout 함수를 실행할 뿐 아무것도 리턴하지 않는다는 사실입니다.**  setTimeout 함수 안의 콜백이 2초 후에 리턴하는 **text는, wait 함수의 리턴값이 아닙니다.**
+
+> 아래처럼도 한번 시행해보자. 
+>
+> ```js
+> function wait(text, milliseconds) {
+>   return setTimeout(() => console.log("Inside setTimeout"), milliseconds);
+> }
+> 
+> fetch('https://jsonplaceholder.typicode.com/users')
+>   .then((response) => response.text())
+>   .then((result) => wait(`Inside Wait ${result} by Codeit`, 2000)) // 2초 후에 리스폰스의 내용 뒤에 'by Codeit' 추가하고 리턴
+>   .then((result) => { console.log("Hi "+result); });
+> ```
+
+이 사실에 유의해야 하는데요. wait 함수는 단지 setTimeout 함수를 실행하고 아무것도 리턴하지 않는 함수일 뿐입니다. 그리고 자바스크립트에서는 이전에 배운대로 함수에서 아무것도 리턴하지 않으면 undefined를 리턴하는 것으로 간주하기 때문에 wait 함수의 리턴값은 undefined입니다.
+
+따라서 세 번째 then 메소드의 콜백으로 undefined가 넘어가고, 그래서 위 이미지에서 보이는 것처럼 undefined가 출력된 겁니다.
+
+setTimeout은 비동기 실행되는 함수인데요. **Promise Chaining 안에서 이렇게 비동기 실행되는 함수를 바로 사용하면, 나중에 실행되는 부분의 리턴값(여기서는 text)를 Promise Chain에서 사용할 수 없게 됩니다.**
+
+이 문제를 해결하려면 이전 영상에서 배웠던 Promise 객체를 직접 생성하는 방법을 사용하면 됩니다. wait 함수를 이렇게 수정해볼게요.
+
+```jsx
+// function wait(text, milliseconds) {
+//   setTimeout(() => text, milliseconds);
+// }
+
+function wait(text, milliseconds) {
+  const p = new Promise((resolve, reject) => {
+    setTimeout(() => { resolve(text); }, 2000);
+  });
+  return p;
+}
+```
+
+지금 wait 함수 안에서 Promise 객체를 직접 생성했고, executor 함수 안에서 setTimeout 함수를 호출했습니다. 그리고 setTimeout 함수 안의 콜백에서 resolve 함수를 호출하는데 이 때 그 아규먼트로 text를 넣었습니다. 그렇다면 Promise 객체 p는 2초 후에 fulfilled 상태가 될 것이고, 그 작업 성공 결과는 파라미터 text의 값이 될 될 것입니다. **wait 함수는 이제 Promise 객체 p를 리턴합니다.**
+
+자, 이 상태에서 코드를 다시 실행해보면
+
+```jsx
+function wait(text, milliseconds) {
+  const p = new Promise((resolve, reject) => {
+    setTimeout(() => { resolve(text); }, 2000);
+  });
+  return p;
+}
+
+fetch('https://jsonplaceholder.typicode.com/users')
+  .then((response) => response.text())
+  .then((result) => wait(`${result} by Codeit`, 2000)) // 2초 후에 리스폰스의 내용 뒤에 'by Codeit' 추가하고 리턴
+  .then((result) => { console.log(result); });
+```
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4388&directory=Untitled%201.png&name=Untitled+1.png)
+
+이번에는 약 2초 후에 리스폰스의 내용이 잘 출력되고,
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4388&directory=Untitled%202.png&name=Untitled+2.png)
+
+리스폰스의 내용 맨 마지막에는 by Codeit이라는 문구가 잘 붙어서 출력되는 것을 알 수 있습니다.
+
+방금처럼 기존의 비동기 실행 함수(여기서는 setTimeout)의 콜백이 리턴하는 값을 Promise Chain에서 사용하고 싶다면, 해당 함수를 감싸서 Promise 객체를 직접 생성하는 코드를 작성해야 합니다. 그리고 그 Promise 객체를 리턴해야 방금처럼 Promise Chain에서 해당 리턴값을 받아서 사용할 수 있습니다.
+
+이렇게 전통적인 형식의 비동기 실행 함수를 Promise 객체로 감싸서 그 Promise 객체를 리턴하는 형식으로 만드는 작업을 **Promisify(프로미스화하다)**라고 하는데요. 앞으로도 이 Promisify라는 용어를 사용하겠습니다. 계속 내용을 읽어봅시다.
+
+# 2. 콜백 헬(callback hell)과 Promise
+
+이번에는 Promisify의 또 다른 예시를 보겠습니다. 그런데 이번에는 브라우저가 아니라 조금 다른 환경에서의 코드를 볼 건데요. 바로 Node.js라고 하는 환경입니다. 오늘날 자바스크립트가 실행되는 환경에는 웹 브라우저뿐만 아니라 Node.js라고 하는 것도 있습니다. 이 Node.js는 오늘날 자바스크립트를 서버에서도 실행할 수 있게 해주는 또 다른 '자바스크립트 실행 환경'인데요. 이 Node.js에서는 브라우저에서와는 또 다른 비동기 함수들이 제공됩니다. (Node.js가 뭔지 더 궁금하신 분들은 [이 영상](https://www.codeit.kr/learn/courses/nodejs-backend-development/3692)을 참고하세요.)
+
+Node.js에는 다음과 같이 특정 파일의 내용을 읽기 위해 사용되는 readFile이라는 비동기 실행 메소드가 있습니다.
+
+```jsx
+fs.readFile('file1.txt', 'utf8', (error, data) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log(data);
+  }
+});
+```
+
+여기서 fs는 readFile 메소드를 가진 객체로, 파일에 관한 기능들을 갖고 있습니다. 일단 여기서 당장 중요한 내용은 아니니까 readFile 메소드에만 집중합시다. readFile 메소드는 첫 번째 파라미터로 파일의 이름, 두 번째 파라미터로 파일 해석 기준(인코딩 기준), 세 번째 파라미터로 콜백을 받는데요. readFile 함수는 파일을 읽다가 에러가 발생하면 콜백의 첫 번째 파라미터(error)에, 해당 에러 객체를 전달하고 콜백을 실행합니다. 만약 파일을 정상적으로 다 읽었으면 콜백의 두 번째 파라미터(data)에, 읽어들인 파일 내용을 전달하고 콜백을 실행하는데요.
+
+이 readFile 메소드도, 콜백을 파라미터에 바로 넣는 비동기 실행 함수라는 점에서 setTimeout 함수, addEventListener 메소드와 비슷합니다. 그런데 이런 형식의 함수(또는 메소드)들은 한 가지 단점이 있다고 했었죠?([참고](https://www.codeit.kr/learn/courses/javascript-intermediate/4385)) 그건 바로 콜백 헬(callback hell) 문제입니다. 예를 들어, 위 코드에서 이제 **file1.txt 파일의 내용을 출력하고 나서 그 다음에 file2.txt라는 파일의 내용을 또 출력**해야한다고 해봅시다. 그럼 코드가 이렇게 되겠죠?
+
+```jsx
+fs.readFile('file1.txt', 'utf8', (error1, data1) => {
+  if (error1) {
+    console.log(error1);
+  } else {
+    console.log(data1);
+    fs.readFile('file2.txt', 'utf8', (error2, data2) => {
+      if (error2) {
+        console.log(error2);
+      } else {
+        console.log(data2);
+      }
+    });
+  }
+});
+```
+
+이렇게 코드를 쓰면 file1.txt의 내용이 출력되고, 그 다음에 file2.txt의 내용이 출력될 겁니다. 코드가 좀 복잡해졌지만 아직은 읽을만한 것 같습니다. 그런데 이제 그 다음으로 file3.txt의 내용도 출력해야 한다고 해봅시다.
+
+그렇다면
+
+```jsx
+fs.readFile('file1.txt', 'utf8', (error1, data1) => {
+  if (error1) {
+    console.log(error1);
+  } else {
+    console.log(data1);
+    fs.readFile('file2.txt', 'utf8', (error2, data2) => {
+      if (error2) {
+        console.log(error2);
+      } else {
+        console.log(data2);
+        fs.readFile('file3.txt', 'utf8', (error3, data3) => {
+          if (error3) {
+            console.log(error3);
+          } else {
+            console.log(data3);
+          }
+        });
+      }
+    });
+  }
+});
+```
+
+코드가 이렇게 됩니다. 이제 코드를 읽기 너무 어려워지지 않았나요?
+
+콜백을 바로 파라미터에 집어넣는 전통적인 형식의 비동기 실행 함수들은 이런 문제가 있습니다. 바로 순차적으로 비동기 실행 함수들을 실행하려고 하면 콜백 안에 또 콜백이 있고, 그 안에 또 콜백이 있는 **콜백 헬(콜백 지옥, callback hell)** 현상을 초래하게 된다는 겁니다.
+
+실제로 실무에서 개발을 하다 보면 이런 콜백 헬이 아주 큰 문제가 됩니다. 그런데 이런 함수들은 Promise 객체를 리턴하는 것도 아니고 애초에 이런 형식으로 정의되어 있기 때문에 문제를 해결하기가 어려워 보이는데요. 이 문제에 대한 대표적인 해결책이 바로 우리가 배운 Promisify입니다.
+
+지금 이 readFile 메소드를 Promisify해보겠습니다.
+
+```jsx
+function readFile_promisified(filename) {
+  const p = new Promise((resolve, reject) => {
+    fs.readFile(filename, 'utf8', (error, data) => {
+      if (error) {
+        reject(error); // 에러 발생 시 -> rejected
+      } else {
+        resolve(data); // 파일 내용 읽기 완료 -> fulfilled
+      }
+    });
+  });
+  return p;
+}
+```
+
+이런 식으로 readFile_promisified라는 이름의 함수를 정의했는데요. 지금 함수 안에서는 Promise 객체를 직접 생성하고 있습니다.  그리고 Promise 객체가 생성될 때 실행되는 **executor** 함수 안에서는 fs 객체의 readFile 메소를 호출했습니다.
+
+여기서 중요한 것은 작업을 수행하다가 에러가 나면 **readFile 함수의 콜백에서**
+
+```jsx
+...                         (error, data) => {
+  if (error) {
+    reject(error); // 에러 발생 시 -> rejected 
+  } else {
+    resolve(data); // 파일 내용 읽기 완료 -> fulfilled 
+  }
+}
+```
+
+**reject 함수를 호출**하고, 파일의 내용을 정상적으로 다 읽었을 때는 **resolve 함수를 호출**한다는 사실입니다. 그리고 reject 함수의 파라미터에는 error 객체를, resolve 함수의 파라미터에는 파일의 내용인 data를 전달했는데요. 이 각각은, 생성된 Promise 객체의 작업 실패 정보 또는 작업 성공 결과가 되겠죠?
+
+이제 **readFile 메소드를 Promisify해서 만든 readFile_promisified 함수**를 사용해서 위의 콜백 헬 코드에서 작성했던 내용을 똑같이 작성해봅시다.
+
+```jsx
+readFile_promisified('file1.txt')
+  .then((data) => { console.log(data); return readFile_promisified('file2.txt'); })
+  .then((data) => { console.log(data); return readFile_promisified('file3.txt'); })
+  .then((data) => { console.log(data); })
+  .catch((error) => { console.log(error); });
+```
+
+짠! 어떤가요? 코드가 훨씬 깔끔해졌죠? readFile_promisified 함수는 Promise 객체를 리턴하기 때문에 이렇게 자유롭게 Promise Chain 안에서 사용할 수 있습니다.
+
+이렇게 원하는 경우에는 전통적인 형식의 비동기 실행 함수를 Promisify해서 콜백 헬을 방지하고, 가독성 높은 코드를 작성할 수 있습니다.
+
+# 3. Promisify를 하면 안 되는 함수들도 있습니다.
+
+이제 기존의 전통적인 형식의 비동기 실행 함수도 원하는 경우에는 Promisify해서 콜백 헬을 방지할 수 있다는 것을 알게 되었습니다. 하지만 전통적인 형식의 비동기 실행 함수라고 해서 모두 Promisify해서 사용해도 되는 것은 아닙니다.
+
+기존의 비동기 실행 함수들 중에서도 **그 콜백을 한번만 실행**하는 것들(setTimeout, readFile 등)만 Promisify해서 사용해도 되는데요.
+
+이것들과 달리 만약 콜백을 여러 번 실행하는 함수들(setInterval, addEventListener 등)인 경우에는 이렇게 Promisify하면 안 됩니다. 왜냐하면 **Promise 객체는 한번 pending 상태에서 fulfilled 또는 rejected 상태가 되고나면 그 뒤로는 그 상태와 결과가 바뀌지 않기 때문입니다.** 이게 무슨 말인지 다음 코드를 보고 이해해봅시다.
+
+```jsx
+const box = document.getElementById('test');
+let count = 0;
+
+function addEventListener_promisified(obj, eventName) { // 이런 Promisify는 하지 마세요
+  const p = new Promise((resolve, reject) => {
+    obj.addEventListener(eventName, () => { // addEventListener 메소드
+      count += 1;
+      resolve(count);
+    });
+  });
+  return p;
+}
+
+addEventListener_promisified(box, 'click').then((eventCount) => { console.log(eventCount); });
+```
+
+이 코드에서 보이는 addEventListener_promisified 함수는 DOM 객체의 addEventListener 메소드를 Promisify한 함수인데요.
+
+지금 Promise 객체가 생성될 때 실행되는 executor 함수 안에서는, DOM 객체에 어떤 이벤트가 발생할 때, 실행할 콜백을 등록하고 있습니다.  특정 이벤트가 발생할 때마다 count라고 하는 변수의 값을 1씩 늘려서 resolve 함수의 파라미터로 전달해서 실행하도록 하는 내용이 들어있는데요.
+
+마지막 코드를 보면,
+
+```jsx
+addEventListener_promisified(box, 'click')
+  .then((eventCount) => { console.log(eventCount); });
+```
+
+이렇게 addEventListener_promisified 함수의 아규먼트로 DOM 객체 box와 문자열 'click'을 넣어서 box 객체가 클릭 이벤트에 반응하도록 했습니다.  (HTML 코드는 생략된 상태입니다.)
+
+하지만 이 코드를 실행하고 box를 클릭해보면  **처음에 1이 딱 출력되고 나서 그 다음 count 값들은 출력되지 않습니다.**
+
+왜냐하면 pending 상태에 있던 Promise 객체(여기서는 p 객체)가 한번 fulfilled 상태 또는 rejected 상태가 되고 나면  Promise 객체의 상태 및 결과가 고정되어 그 뒤로는 바뀌지 않기 때문입니다.
+
+따라서 지금 위 코드에 보이는 resolve(count)라고 하는 코드가 box 버튼을 클릭할 때마다 여러 번 실행된다고 해도 p 객체가 갖고 있는 상태와 결과는 변하지 않습니다. 그래서 then 메소드 안의 콜백도 처음 클릭했을 때 딱 한번 실행되고 끝인 겁니다.
+
+이렇게 콜백이 여러 번 실행되어야하는 비동기 실행 함수인 경우에는 Promisify를 하면 안 됩니다. Promisify를 하고 싶은 경우라도, 콜백이 딱 한 번 실행되는 함수인 경우에만 해야한다는 사실, 잘 기억하세요!
+
+
+
+
+
+## 이미 상태가 결정된 Promise 객체 
+
+이때까지 우리는 pending 상태에 있다가 fulfilled 상태 또는 rejected 상태가 되는 Promise 객체를 직접 만드는 법을 배웠습니다. 그런데 아예 **처음부터 바로 fulfilled 상태이거나 rejected 상태인 Promise 객체를 만드는 것도 가능**한데요. 어떻게 할 수 있는지 살펴봅시다.
+
+# 1. 이미 상태가 결정된 Promise 객체 만들기
+
+#### (1) fulfilled 상태의 Promise 객체 만들기
+
+```jsx
+const p = Promise.resolve('success');
+```
+
+Promise의 resolve라는 메소드를 사용하면 바로 fulfilled 상태의 Promise 객체를 만들 수 있습니다. 위와 같이 쓰면 fulfilled 상태이면서, 작업 성공 결과로 **문자열 'success'**를 가진 Promise 객체를 만들 수 있습니다.
+
+#### (2) rejected 상태의 Promise 객체 만들기
+
+```jsx
+const p = Promise.reject(new Error('fail'));
+```
+
+Promise의 reject라는 메소드를 사용하면 바로 rejected 상태의 Promise 객체를 만들 수 있습니다. 위와 같이 쓰면 rejected 상태이면서, 작업 실패 정보로, **fail이라는 메시지를 가진 Error 객체**를 가진 Promise 객체를 만들 수 있습니다.
+
+Promise 객체를 직접 생성하는 방법에는 이전에 배웠던 것처럼
+
+```jsx
+const p = new Promise((resolve, reject) => {
+
+});
+```
+
+**new 생성자와 executor 함수**를 사용하는 것 말고도 **resolve 메소드**나, **reject 메소드**를 사용하는 방법도 있다는 사실을 기억하셔야 합니다.  resolve 메소드나 reject 메소드로 생성한 Promise 객체도 이때까지 우리가 배운 것과 동일하게 작동합니다.
+
+```jsx
+const p = Promise.resolve('success');
+p.then((result) => { console.log(result); }, (error) => { console.log(error); });
+```
+
+이 코드에서는 첫 번째 콜백이 실행되어서 작업 성공 결과인 문자열 success가 출력되고
+
+```jsx
+const p = Promise.reject(new Error('fail'));
+p.then((result) => { console.log(result); }, (error) => { console.log(error); });
+```
+
+이 코드에서는 두 번째 콜백이 실행되어서 작업 실패 정보인 Error 객체의 내용이 출력되겠죠?
+
+어떤 비동기 작업을 처리할 필요가 있다면, new 생성자와 executor 함수를 사용해서 Promise 객체를 만들어야 하지만, 그렇지 않고 바로 상태가 이미 결정된 Promise 객체를 만들고 싶을 때는 이 resolve 또는 reject 메소드를 사용합니다.
+
+구체적으로 예를 들자면, 함수 안에서 리턴하는 값이 여러 개인 경우 모든 리턴값을 Promise 객체로 통일하고 싶을 때, 종종 resolve 또는 reject 메소드를 쓰는데요. 예를 들어,
+
+```jsx
+function doSomething(a, b) {
+    //~~
+  if (problem) {
+    throw new Error('Failed due to..'));
+  } else {
+    return fetch('https://~');
+  }
+}
+```
+
+이렇게 문제(problem이 falsy인 경우)가 없는 경우에만 fetch 함수를 호출해서 Promise 객체를 리턴하는 함수가 있다고 해봅시다. 만약 문제가 발생하는 경우에는 바로 Error 객체를 throw해 버리고 있죠? 만약 문제가 존재하는 경우에도 Promise 객체를 리턴하고 싶다면 reject 메소드를 써서 이렇게 작성할 수 있습니다.
+
+```jsx
+function doSomething(a, b) {
+  // ~~
+  if (problem) {
+    return Promise.reject(new Error('Failed due to..'));
+  } else {
+    return fetch('https://~');
+  }
+}
+```
+
+지금 문제가 있는 경우에도 에러를 바로 throw하는 게 아니라, 생성한 에러를 Promise 객체의 작업 실패 정보로 설정해서, 그 Promise 객체를 리턴하는 것으로 바꿔줬죠? 만약 어떤 함수가 어떤 상황이든 항상 Promise 객체를 리턴하는 것으로 통일하고 싶은 경우에는 resolve나 reject 메소드를 유용하게 사용할 수 있습니다.
+
+# 2. Promise 객체의 작업 성공 결과 또는 작업 실패 정보
+
+간혹 Promise 객체를 공부하는 분들 중에, Promise 객체가 pending 상태일 때 미리 then 메소드가 붙어있어야만 나중에 이 Promise 객체가 fulfilled 상태 또는 rejected 상태가 되었을 때 그 결과(작업 성공 결과 또는 작업 실패 정보)를 콜백의 파라미터로 받을 수 있고, 이미 fulfilled 상태 또는 rejected 상태가 된 Promise 객체의 경우에는 then 메소드를 붙여도 그 결과를 콜백에서 받지 못한다고 오해하는 분들이 있습니다.
+
+하지만 방금 resolve, reject 메소드에서도 봤듯이 이미 fulfilled 또는 rejected 상태가 결정된 Promise 객체라도 then 메소드를 붙이면, 콜백에서 해당 작업 성공 결과 또는 작업 실패 정보를 받아올 수 있습니다. **시점과는 전혀 상관이 없는 개념인 겁니다.**
+
+Promise 객체의 상태가 fulfilled 또는 rejected 상태이기만 하면, **어느 시점이든, 몇 번이든** then 메소드를 붙여서 해당 결과를 가져올 수 있습니다. 예를 들어,
+
+```jsx
+const p = new Promise((resolve, reject) => {
+  setTimeout(() => { resolve('success'); }, 2000); // 2초 후에 fulfilled 상태가 됨
+});
+
+p.then((result) => { console.log(result); }); // Promise 객체가 pending 상태일 때 콜백 등록
+setTimeout(() => { p.then((result) => { console.log(result); }); }, 5000); // Promise 객체가 fulfilled 상태가 되고 나서 콜백 등록 
+```
+
+이 코드를 실행하면 Promise가 pending 상태일 때 등록한 콜백이든, fulfilled 상태가 된 후에 등록한 콜백이든 잘 실행되는 것을 알 수 있습니다. 이렇게 어느 시점이든, 몇 번의 then 메소드를 붙이든 상관없이, pending 상태만 아니라면 항상 then 메소드로 Promise 객체의 결과를 추출할 수 있습니다.
+
+Promise 객체는 항상 결과를 줄 수 있는 공급자(Provider)이고 그것의 then 메소드는 그 결과를 소비하는 콜백인 소비자(Consumer)를 설정하는 메소드라는 사실을 잘 기억하셔야 합니다. 시점과는 전혀 연관이 없으니까 오해하지 마세요!
+
+
+
+
+
+예시)
+
+```js
+function pick(menus) {
+  console.log('Pick random menu!');
+  const p = new Promise((resolve, reject) => {
+    if (menus.length === 0) {
+      reject(new Error('Need Candidates'));
+    } else {
+      setTimeout(() => {
+        const randomIdx = Math.floor(Math.random() * menus.length);
+        const selectedMenu = menus[randomIdx];
+        resolve(selectedMenu);
+      }, 1000); // 시간이 걸리는 걸 시뮬레이션하기 위한 1초입니다.
+    }
+  });
+  return p;
+}
+
+function getRandomMenu() {
+  return fetch('https://learn.codeit.kr/api/menus')
+    .then((response) => response.json())
+    .then((result) => {
+      const menus = result;
+      return pick(menus); // ! random pick function
+    });
+}
+
+getRandomMenu()
+  .then((menu) => {
+    console.log(`Today's lunch is ${menu.name} ~`);
+  })
+  .catch((error) => {
+    console.log(error.message);
+  })
+  .finally(() => {
+    console.log('Random Menu candidates change everyday');
+  });
+```
+
+
+
+# 여러 Promise 객체를 다루는 방법(심화)
+
+이때까지 우리는 하나의 Promise 객체를 다루기 위해 알아야 하는 지식들을 배웠습니다.  하지만 실무 개발에서는 **여러 개의 Promise 객체를 동시에 다뤄야 하는 경우**도 있는데요.  이번 노트에서는 여러 개의 Promise 객체를 다뤄야 할 때 사용되는 Promise의 메소드들을 배워보겠습니다.
+
+# 1. all 메소드
+
+설명을 하기에 앞서 바로 코드를 보겠습니다.
+
+```jsx
+// 1번 직원 정보
+const p1 = fetch('https://learn.codeit.kr/api/members/1').then((res) => res.json());
+// 2번 직원 정보
+const p2 = fetch('https://learn.codeit.kr/api/members/2').then((res) => res.json());
+// 3번 직원 정보
+const p3 = fetch('https://learn.codeit.kr/api/members/3').then((res) => res.json());
+
+Promise
+  .all([p1, p2, p3])
+  .then((results) => {
+    console.log(results); // Array : [1번 직원 정보, 2번 직원 정보, 3번 직원 정보]
+  });
+```
+
+지금 이 코드에는 서로 다른 3개의 URL로 리퀘스트를 보내는 fetch 함수들이 보입니다. URL을 자세히 보니 이전에 사용했던 직원 정보에 관한 학습용 URL이네요. 지금 1번, 2번, 3번 직원의 정보를 각각 요청하고 있죠?
+
+그 다음 부분을 보면, Promise의 **all**이라는 메소드를 호출하고 있고, all 메소드의 아규먼트로는 **배열 하나**가 들어있습니다. 그 배열의 요소들은, 각 직원 정보를 요청하고 받아서 Deserialize까지 수행한 작업 성공 결과를 담고 있는 Promise 객체들인 p1, p2, p3 객체입니다.
+
+이 all 메소드는 무슨 기능을 하는 걸까요? **all 메소드도 then 메소드처럼 새로운 Promise 객체를 리턴**하는데요.  all 메소드는 이렇게 아규먼트로 들어온 **배열 안에 있는 모든 Promise 객체가 pending 상태에서 fulfilled 상태가 될 때까지 기다립니다.**  그리고 모든 Promise 객체들이 fulfilled 상태가 되면, all 메소드가 리턴했던 Promise 객체는 fulfilled 상태가 되고,  각 Promise 객체의 작업 성공 결과들로 이루어진 배열을, 그 작업 성공 결과로 갖게 됩니다.
+
+이 코드를 직접 실행해보면,
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4391&directory=Untitled.png&name=Untitled.png)
+
+이렇게 all 메소드가 리턴한 Promise 객체는,
+
+(1) 각 개별 Promise 객체의 작업 성공 결과로 이루어진 배열을  (2) 자신의 작업 성공 결과로 갖는다는 것을 알 수 있습니다.
+
+배열의 각 요소로 각 직원 정보 객체가 잘 보이죠? 이렇게 all 메소드는 **여러 Promise 객체의 작업 성공 결과를 기다렸다가 모두 한 번에 취합**하기 위해서 사용합니다.
+
+그런데 만약 p1~3 객체들 중 하나라도, rejected 상태가 되면 어떻게 될까요?
+
+```jsx
+// 1번 직원 정보
+const p1 = fetch('https://learn.codeit.kr/api/members/1').then((res) => res.json());
+// 2번 직원 정보
+const p2 = fetch('https://learn.codeit.kr/api/members/2').then((res) => res.json());
+// 3번 직원 정보
+const p3 = fetch('https://learnnnnnn.codeit.kr/api/members/3').then((res) => res.json());
+
+Promise
+  .all([p1, p2, p3])
+  .then((results) => {
+    console.log(results); // Array : [1번 직원 정보, 2번 직원 정보, 3번 직원 정보]
+  });
+```
+
+마지막 fetch 함수에 존재하지 않는 URL 주소를 적고 코드를 다시 실행해보겠습니다. 코드를 실행해보면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4391&directory=Untitled%201.png&name=Untitled+1.png)
+
+마지막 fetch 함수에서 문제가 발생해서 p3가 rejected 상태가 되면,  all 메소드가 리턴한 Promise 객체는 p3 객체처럼 rejected 상태가 되고 동일한 작업 실패 정보를 갖게 됩니다.  이렇게 all 메소드는 하나의 Promise 객체라도 rejected 상태가 되면, 전체 작업이 실패한 것으로 간주해야 할 때 사용합니다.  그리고 이렇게 Promise 객체가 하나라도 rejected 상태가 되는 경우에 대비하려면  이전에 배웠던 것처럼
+
+```jsx
+// 1번 직원 정보
+const p1 = fetch('https://learn.codeit.kr/api/members/1').then((res) => res.json());
+// 2번 직원 정보
+const p2 = fetch('https://learn.codeit.kr/api/members/2').then((res) => res.json());
+// 3번 직원 정보
+const p3 = fetch('https://learnnnnnn.codeit.kr/api/members/3').then((res) => res.json());
+
+Promise
+  .all([p1, p2, p3])
+  .then((results) => {
+    console.log(results); // Array : [1번 직원 정보, 2번 직원 정보, 3번 직원 정보]
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+그냥 이렇게 catch 메소드를 붙여주면 됩니다. 어차피 all 메소드도 Promise 객체를 리턴하니까 특별히 새로울 건 없겠죠?
+
+# 2. race 메소드
+
+race 메소드도 all 메소드와 마찬가지로 여러 Promise 객체들이 있는 배열을 아규먼트로 받습니다. 그리고 race 메소드도 all 메소드처럼 Promise 객체를 리턴하는데요. 하지만 그 적용 원리가 다릅니다. race 메소드가 리턴한 Promise 객체는 아규먼트로 들어온 배열의 여러 Promise 객체들 중에서  **가장 먼저 fulfilled 상태 또는 rejected 상태가 된 Promise 객체와 동일한 상태와 결과를 갖게 됩니다.**
+
+예를 들어 이런 코드가 있다고 할 때,
+
+```jsx
+const p1 = new Promise((resolve, reject) => {
+  setTimeout(() => resolve('Success'), 1000);
+});
+const p2 = new Promise((resolve, reject) => {
+  setTimeout(() => reject(new Error('fail')), 2000);
+});
+const p3 = new Promise((resolve, reject) => {
+  setTimeout(() => reject(new Error('fail2')), 4000);
+});
+
+Promise
+  .race([p1, p2, p3])
+  .then((result) => {
+    console.log(result); // hello 출력
+  })
+  .catch((value) => {
+    console.log(value);
+  });
+```
+
+지금 race 메소드 안의 배열에 들어있는 Promise 객체들 중에서 무엇이 가장 빨리 fulfileld 또는 rejected 상태가 될까요?  답은 1초 후에 fulfilled 상태가 되는 p1 객체입니다. p1 객체는 1초 후에 fulfilled 상태가 되고, 그 작업 성공 결과로 문자열 Success를 가지게 되는데요.  p2는 2초 후에, p3는 4초 후에 rejected 상태가 됩니다.
+
+race 메소드가 리턴한 Promise 객체는 이 중에서 가장 빨리 상태 정보가 결정된 p1 객체와 동일한 상태와 결과를 가집니다.  말그대로 race 메소드는 여러 Promise 객체들을 레이스(race, 경쟁)시켜서 가장 빨리 상태가 결정된 Promise 객체를 선택하는 메소드입니다.  이 코드를 실행하면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4391&directory=Untitled%202.png&name=Untitled+2.png)
+
+p1 객체의 작업 성공 결과였던 문자열 Success가 잘 출력됩니다.
+
+만약 setTimeout에 넣었던 밀리세컨즈를 이렇게 바꾼다면
+
+```jsx
+const p1 = new Promise((resolve, reject) => {
+  setTimeout(() => resolve('Success'), 6000);
+});
+const p2 = new Promise((resolve, reject) => {
+  setTimeout(() => reject(new Error('fail')), 2000);
+});
+const p3 = new Promise((resolve, reject) => {
+  setTimeout(() => reject(new Error('fail2')), 4000);
+});
+
+Promise
+  .race([p1, p2, p3])
+  .then((result) => {
+    console.log(result); // hello 출력
+  })
+  .catch((value) => {
+    console.log(value);
+  });
+```
+
+이번에는 p2가 p1보다 더 빨리 상태가 결정됩니다. 그럼 결국 race 메소드가 리턴한 Promise 객체는 p2처럼 rejected 상태가 되고 동일한 작업 실패 정보를 갖게 됩니다. 이 코드를 실행해보면
+
+![img](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=4391&directory=Untitled%203.png&name=Untitled+3.png)
+
+Error 객체의 정보가 잘 출력되는 것을 알 수 있습니다.  
+ 자, all 메소드와 race 메소드 잘 이해되시나요? 실무에서는 이렇게 여러 Promise 객체들을 한꺼번에 다뤄야할 때도 있습니다. 그럴 때 각 용도에 적합한 메소드를 사용하면 되는데요.   all 메소드나 race 메소드 말고 allSettled, any라는 메소드도 있습니다.  이것들도 all, race 메소드처럼 Promise 객체 배열을 아규먼트로 받고 Promise 객체를 리턴하는데요.
+
+이것들도 간단하게 설명하겠습니다.
+
+**각 메소드가 리턴한 Promise 객체가 A라고 할 때**,
+
+**allSettled 메소드** : 배열 내의 모든 Promise 객체가 fulfilled 또는 rejected 상태가 되기까지 기다리고, pending 상태의 Promise 객체가 하나도 없게 되면, A의 상태값은 fulfilled 상태가 되고 그 작업 성공 결과로, 하나의 배열을 갖게 됩니다.  이 배열에는 아규먼트로 받았던 배열 내의 각 promise 객체의
+
+(1) 최종 상태를 status 프로퍼티,  (2) 그 작업 성공 결과는 value 프로퍼티,  (3) 그 작업 실패 정보는 reason 프로퍼티
+
+에 담은 객체들이 요소로 존재합니다.  이런 식으로 말이죠.
+
+```jsx
+[
+   {status: "fulfilled", value: 1},
+   {status: "fulfilled", value: 2},
+   {status: "fulfilled", value: 3},
+   {status: "rejected",  reason: Error: an error}
+]
+```
+
+참고로 **fulfilled 상태와 rejected 상태를 묶어서 settled 상태라고 하는데요.** allSettled 메소드는 말 그대로 배열 속 Promise 객체들이 settled 상태가 되기만 하면 되는 겁니다. 이에 반해 위에서 배운 all 메소드는 모든 Promise 객체들이 fulfilled 상태가 되기를 기다리는 거구요.
+
+**any 메소드** : 여러 Promise 객체들 중에서 가장 먼저 fulfilled 상태가 된 Promise 객체의 상태와 결과가 A에도 똑같이 반영됩니다. 만약 모든 Promise 객체가 rejected 상태가 되어버리면 AggregateError라고 하는 에러를 작업 실패 정보로 갖고 rejected 상태가 됩니다. any라는 단어의 뜻처럼 배열 속의 Promise 객체 중 단 하나라도 fulfilled 상태가 되면 되는 겁니다.
+
+자, 각 메소드의 이름과 그 성질을 매칭해서 기억해보세요. 나중에 혹시 정확한 성질이 기억나지 않더라도 다시 찾아보면 되니까 지금 잘 이해해두는 것이 중요합니다. 참고로 어떤 메소드든 결국 하나의 Promise 객체를 리턴하기 때문에 그 리턴 결과를 Promise Chain에서 자유롭게 사용할 수 있다는 점을 기억해두세요.
+
+혹시 각 메소드들의 사용법을 좀더 자세히 보고 싶은 분들은 아래 링크를 참조하세요.
+
+- [all 메소드](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all)
+- [race 메소드](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/race)
+- [allSettled 메소드](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/allSettled)
+- [any 메소드](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/any)
+
+
+
+
+
+
+
+# Axios
+
+우리는 이때까지 fetch 함수를 사용해서 Promise 공부를 했습니다. 여기서 잠깐 챕터 1에서 배웠던 ['그밖에 알아야 할 내용들' 노트](https://www.codeit.kr/learn/courses/javascript-intermediate/4362)의 내용 중 **1. Ajax 부분**을 다시 읽고 와봅시다.
+
+> Ajax는 웹 브라우저가 **현재 페이지를 그대로 유지한 채로 서버에 리퀘스트를 보내고 리스폰스를 받아서**, 새로운 페이지를 로드하지 않고도 변화를 줄 수 있게 해주는 기술입니다.
+
+여기서 저는 **fetch 함수**가 Ajax 통신을 하는 함수라고 했는데요. 그런데 오늘날 개발 실무에서는 이 fetch 함수 말고도 Ajax 통신을 할 수 있는 방법이 존재한다고 했죠? 그것은 바로 **axios** 라고 하는 외부 패키지를 사용하는 것입니다. 잠깐 간단하게 axios 패키지를 사용한 코드를 보겠습니다.
+
+```jsx
+axios
+  .get('https://jsonplaceholder.typicode.com/users')
+  .then((response) => {
+    console.log(response);
+  })
+  .catch((error) => {
+    console.log(error);
+  });
+```
+
+이 코드는 axios 패키지에서 제공하는 axios 객체를 사용해서 GET 리퀘스트를 보내고 그 리스폰스를 받는 코드인데요.  자세히 보면 지금 코드에서 axios.get이라고 쓰여 있는 부분만 fetch로 바꾸면 fetch 함수와 사용법이 비슷하지 않나요?
+
+네, 그렇습니다. 사실 **axios 객체에서 리퀘스트를 보내는 많은 메소드들이 fetch 함수처럼 Promise 객체를 리턴합니다.**  그래서 fetch 함수의 사용법과 비슷한 점이 많은데요.
+
+다만, axios 객체에는 fetch 함수에는 없는 다음과 같은 몇 가지 기능 및 장점들이 있습니다.
+
+- 모든 리퀘스트, 리스폰스에 대한 공통 설정 및 공통된 전처리 함수 삽입 가능
+- serialization, deserialization을 자동으로 수행
+- 특정 리퀘스트에 대해 얼마나 오랫동안 리스폰스가 오지 않으면 리퀘스트를 취소할지 설정 가능(request timeout)
+- 업로드 시 진행 상태 정보를 얻을 수 있음
+- 리퀘스트 취소 기능 지원
+
+이 밖에도 다양한 장점들이 있지만 이 노트는 axios의 사용법 자체를 설명하는 노트는 아니기 때문에 생략하겠습니다.  혹시 axios를 배워보고 싶은 분들은 [관련 GitHub  페이지](https://github.com/axios/axios)를 참조하세요.  페이지를 자세히 읽어보면 fetch 함수와 유사한 작동 원리, 개발 실무에 특화된 추가 기능 등을 볼 수 있을 겁니다.
+
+axios가 이렇게 fetch에 비해 다양한 기능을 지원하는 것은 맞지만 단점도 있습니다. 바로 별도의 다운로드가 필요한 패키지라는 점이죠.  fetch 함수는 웹 브라우저에서 바로 지원되는 함수이기 때문에 별도로 패키지를 다운로드받지 않아도 되지만,  axios는 별도로 패키지를 다운로드해줘야 합니다.
+
+그래서 **axios에서 제공하는 추가 기능이 필요한 경우에는 axios를 쓰고,  그런 기능이 필요하지 않고 별도의 패키지 다운로드를 원하지 않는 경우에는 fetch 함수를 사용합니다.**
+
+실무에서는 fetch 이외에 axios도 많이 쓴다는 점,  그리고 axios 또한 리퀘스트를 보내는 주요 메소드들이 Promise 객체를 리턴한다는 점을 기억하세요.
+
+이번 챕터에서 Promise 객체를 잘 공부했다면, axios 사용법도 쉽게 익힐 수 있을 겁니다.
