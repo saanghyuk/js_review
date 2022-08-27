@@ -1,8 +1,12 @@
-
+import React from 'react';
 import ReactDOM from 'react-dom/client';
+import App from './app'
 
+import './index.css'
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <h1>주사위 게임</h1>
+  <>
+    <App />
+  </>
 );
