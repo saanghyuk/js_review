@@ -90,3 +90,272 @@
 
 
 
+그런데 뭐 할때마다, 아래 에러가 뜬다. 무슨 의미일까? 각 child는 key를 가져야 한다? 
+
+![error](./images/error.png)
+
+ReviewList안에 아래와 같이 map을 쓴 부분이 있다.  얘네가 key를 가져야 한다는 것. 
+
+```jsx
+<ul>
+      {items.map(item => {
+        return (
+          <li>
+            <ReviewListItem item={item} onDelete={onDelete} />
+          </li>
+        );
+      })}
+</ul>
+```
+
+마침 데이터에 `id`가 있어서, 그걸로 key prop을 지정하면 된다. 
+
+```js
+<li key={item.id}>
+```
+
+**이처럼, 배열을 랜더링 할때는 반드시 key를 설정해 주어야 한다.**
+
+이게 지금 왜 그런지 아래다가 input하나 넣어보면 안다. 
+
+input 넣어놓고서, input 랜더링 되면 거기다가 글자 친다음에 삭제 눌러보면, input에 내가 썻던 글이 엉뚱한 대로 간다. 
+
+```jsx
+return (
+    <ul>
+      {items.map(item => {
+        return (
+          <li>
+            <ReviewListItem item={item} onDelete={onDelete} />
+            <input />
+          </li>
+        );
+      })}
+    </ul>
+  ); 
+```
+
+심지어, map에서 던져주는 두번째 요소인 index를 받아서 key로 사용해도 이 꼴이 똑같이 난다. 배열 인덱스는 배열이 바뀔때마다 새롭게 부여된다. 그래서, 데이터에 대한 고유의 값으로 사용이 불가능한 것. id값은 데이터와 상관없이 같은 데이터를 가리킨다. 
+
+**근데, key를 지정하지 않거나 배열 index 같이 데이터를 가리키는 고유한 값으로 key를 지정하지 않으면 이상하게 됬었는데. 왜 그런걸까?** 
+
+사과, 망고, 포도를 랜더링 하고 싶다고 해보자. 그런데, 망고가 빠진 배열로 바뀌었다. 
+
+![list_key](./images/list_key.png)
+
+이게 **망고가 삭제되었다.** 이렇게 말할 수도 있는데, 다르게 말하면, **포도가 삭제되고 망고가 포도로 바뀌었다** 라고 표현될 수도 있다.  즉, 어떻게 바뀐건지 결과만 봐서는 알길이 없다. 
+
+![list_key](./images/list_key2.png)
+
+key를 사용하면? 요소마다 key로 고유한 값을 지정해 주면, 결과만 보고도 **망고가 삭제됬다** 라는 것을 알 수 있다. 
+
+![list_key](./images/list_key3.png)
+
+**즉, 배열의 변화를 정확하게 진단하려면 key를 지정해 줘야 가능하다.** 라는 사실을 기억하고 가자. 
+
+
+
+
+
+앞에서 배열 메소드를 활용해서 렌더링을 하고, 정렬과 삭제 삭제 기능을 만들었는데요.
+
+이번 레슨에선 이 내용들을 가볍게 정리하고 넘어가겠습니다.
+
+[pokemon.json](https://bakey-api.codeit.kr/api/files/resource?root=static&seqId=5035&directory=pokemons.json&name=pokemons.json)
+
+위 JSON 파일은 포켓몬 도감 151번까지의 포켓몬 데이터입니다.
+
+각 데이터를 구분하는 값인 `id`, 포켓몬 이름을 값으로 하는 `name` 프로퍼티, 그리고  포켓몬의 속성인 `types` 프로퍼티가 있습니다.
+
+# `map` 으로 렌더링하기
+
+배열 메소드 `map`에서 콜백 함수의 리턴 값으로 리액트 엘리먼트를 리턴하면 되는데요.
+
+```jsx
+import items from './pokemons';
+
+function Pokemon({ item }) {
+  return (
+    <div>
+      No.{item.id} {item.name}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>
+          <Pokemon item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+ 
+export default App;
+```
+
+참고로 반드시 JSX의 중괄호 안에서 `map` 함수를 써야 하는 것은 아닙니다.
+
+예를 들어서 아래처럼 `renderedItems` 라는 변수에 `map`의 결과를 지정해도 똑같이 렌더링 하게 됩니다. `renderedItems` 의 계산된 값이 결국 리액트 엘리먼트의 배열이기 때문이죠.
+
+```jsx
+import items from './pokemons';
+
+function Pokemon({ item }) {
+  return (
+    <div>
+      No.{item.id} {item.name}
+    </div>
+  );
+}
+
+function App() {
+  const renderedItems = items.map((item) => (
+    <li key={item.id}>
+      <Pokemon item={item} />
+    </li>
+  ));
+
+  return (
+    <ul>
+      {renderedItems}
+    </ul>
+  );
+}
+ 
+export default App;
+```
+
+# `sort` 로 정렬하기
+
+배열 메소드의 `sort` 메소드를 사용하면 배열을 정렬할 수 있었죠?
+
+이렇게 정렬한 배열을 렌더링 할 수 있었습니다.
+
+아래 코드는 `id` 순서대로 / 반대로 정렬하는 예시입니다.
+
+```jsx
+import { useState } from 'react';
+import items from './pokemons';
+
+function Pokemon({ item }) {
+  return (
+    <div>
+      No.{item.id} {item.name}
+    </div>
+  );
+}
+
+function App() {
+  const [direction, setDirection] = useState(1);
+
+  const handleAscClick = () => setDirection(1);
+
+  const handleDescClick = () => setDirection(-1);
+
+  const sortedItems = items.sort((a, b) => direction * (a.id - b.id));
+
+  return (
+    <div>
+      <div>
+        <button onClick={handleAscClick}>도감번호 순서대로</button>
+        <button onClick={handleDescClick}>도감번호 반대로</button>
+      </div>
+      <ul>
+        {sortedItems.map((item) => (
+          <li key={item.id}>
+            <Pokemon item={item} />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+```
+
+# `filter` 로 삭제하기
+
+배열 메소드 중 `filter` 와 배열형 스테이트를 활용하면
+
+삭제 기능을 간단히 구현할 수 있었습니다.
+
+```jsx
+import { useState } from 'react';
+import mockItems from './pokemons';
+
+function Pokemon({ item, onDelete }) {
+  const handleDeleteClick = () => onDelete(item.id);
+
+  return (
+    <div>
+       No.{item.id} {item.name}
+      <button onClick={handleDeleteClick}>삭제</button>
+    </div>
+  );
+}
+
+function App() {
+  const [items, setItems] = useState(mockItems);
+
+  const handleDelete = (id) => {
+    const nextItems = items.filter((item) => item.id !== id);
+    setItems(nextItems);
+  };
+
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.id}>
+          <Pokemon item={item} onDelete={handleDelete} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default App;
+```
+
+# 반드시 `key` 를 내려주자
+
+각 요소를 렌더링 할 때는 `key` Prop을 내려줘야 하는데요.
+
+이때 가장 바깥쪽에 있는 (최상위) 태그에다가 `key` Prop을 지정하면 됩니다.
+
+앞에서 `id` 는 각 요소를 구분할 수 있는 고유한 값이기 때문에 사용했었는데요.
+
+반드시 `id` 일 필요는 없고 포켓몬 이름처럼(참고로 포켓몬 이름은 고유합니다)
+
+각 데이터를 구분할 수 있는 고유한 값이면 무엇이든 `key` 로 활용해도 상관없습니다.
+
+```jsx
+import items from './pokemons';
+
+function Pokemon({ item }) {
+  return (
+    <div>
+      No.{item.id} {item.name}
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ul>
+      {items.map((item) => (
+        <li key={item.name}>
+          <Pokemon item={item} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export default App;
+`
+```
