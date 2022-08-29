@@ -359,3 +359,849 @@ function App() {
 export default App;
 `
 ```
+
+
+
+
+
+# 실습할 서버를 어디서 구하나요?
+
+이제부터 우리가 작성한 코드를 백엔드 서버에 연동하는 방법을 배워볼 겁니다.
+
+프론트엔드만 공부했는데 서버는 어디서 어떻게 구해야 할지, 걸림돌이 될 수 있겠죠?
+
+보통 프론트엔드 개발자들은 직접 서버를 만드는 경우보다는 백엔드 개발자들이 만들어 둔 서버를 사용하는데요.
+
+처음 프론트엔드 개발을 배울 때는 이런 서버가 없어서 네트워크 관련 내용을 따라하기 힘든 경우도 많습니다.
+
+그래서 이번 토픽에서는 실제 개발 상황처럼 여러분이 백엔드 서버를 연동을 할 수 있도록
+
+코드잇에서 만든 백엔드 서버를 제공할 건데요.
+
+저는 이 서버를 **실습 서버**라고 부르겠습니다.
+
+이번 레슨에서는 실습 서버가 어떤 건지 소개드릴게요.
+
+# 실습 서버 주소
+
+우리 수업의 영상에서 사용할 실습 서버의 주소는 `https://learn.codeit.kr/api/...`로 시작합니다.
+
+하지만 이렇게 하나의 주소를 가지고 여러 수강생들이 실습을 하면 서로 데이터가 겹치는 불편함이 있겠죠?
+
+그래서 주소를 나눠 쓸 수 있도록 했는데요. 각 주소마다 데이터가 따로 관리되니 좀 더 편하게 실습할 수 있습니다.
+
+여러분이 실습하실 때는 **`/api` 대신에 `/0000` ~ `/9999` 사이의 숫자 네 자리**로 사용하시면 됩니다.
+
+예를들어서 저는 주소를 쉽게 외우기 위해서 제 전화번호 뒷자리인 **1636을** 사용하려고 하는데요.
+
+이런 경우에는 다음과 같은 주소를 사용하면 됩니다.
+
+- `https://learn.codeit.kr/1636/film-reviews/`
+- `https://learn.codeit.kr/1636/foods/`
+
+물론 서버를 나눠서 사용하더라도 여러 사람이 같은 번호를 고르면 서버를 함께 쓰게 됩니다. 데이터가 헷갈려서 불편하다면 이럴 때는 다른 번호를 골라서 사용하시면 됩니다.
+
+# 여러 사람들이 동시에 사용하는 서버
+
+실습 서버는 여러 수강생들이 함께 사용합니다.
+
+다른 수강생이 만든 데이터가 갑자기 생기거나 내가 만든 데이터가 수정될 수 있습니다.
+
+내가 만든 결과물이 영상에 나오는 결과물이랑 다를 수 있다는 점도 참고해주세요.
+
+또, 이 서버는 여러 수강생이 같이 사용하는 거니까
+
+**개인정보나 비밀번호 같은 민감한 데이터를 올리지 않도록 주의하시기 바랍니다!**
+
+# 데이터는 하루에 한 번씩 초기화돼요!
+
+데이터가 계속 쌓이는 걸 막기 위해서 서버 데이터는 **매일 새벽 초기화됩니다.**
+
+자 그럼 이제 시작해볼까요?
+
+
+
+# 리액트로 Fetch 함수 사용하기
+
+나는 https://learn.codeit.kr/9131/film-reviews/ <- 여기로 보낸다. 
+
+
+
+
+
+이제 페이지 로드되면, 자동으로 불러오게 할거야. 근데, 그냥 `handleLoad()` 이렇게 호출해놓으면 계속 무한루프 보낸다. 
+
+```jsx
+const handleLoad = async () => {
+    const { reviews } = await getReviews();
+    setItems(reviews);
+  };
+
+
+handleLoad()
+
+
+  return (
+    <div>
+      <button onClick={handleNewestClick}>최신순</button>
+      <button onClick={handleBestClick}>베스트순</button>
+
+      <ReviewList items={sortedItems} onDelete={handleDelete} />
+    </div>
+  );
+}
+```
+
+이게 왜 그럴까? 일단, `handleLoad()`실행하면, `setItems()`가 있으니깐, `App()컴포넌트를 다시 실행하게 된다. 이때, handleLoad()를 또 실행하는 것. 
+
+리액트에서는 이런 경우에 사용하라고, `useEffect`라는 함수를 만들어 놨다. `useEffect` 를 사용하면, 맨 처음 랜더링할때만 이 함수를 사용한다. 
+
+```jsx
+ const handleLoad = async () => {
+    const { reviews } = await getReviews();
+    setItems(reviews);
+  };
+
+  useEffect(() => {
+    handleLoad();
+  }, []);
+
+  return (
+    <div>
+      <button onClick={handleNewestClick}>최신순</button>
+      <button onClick={handleBestClick}>베스트순</button>
+
+      <ReviewList items={sortedItems} onDelete={handleDelete} />
+    </div>
+  );
+}
+```
+
+
+
+`useEffect`에서는 콜백함수와 빈 배열을 넘겨줬다. 콜백함수는 useEffect가 비동기로 실행할 함수. 배열은 dependency list라는 것. 구조가 특이하다. 
+
+콜백 실행하면, handleLoad가 실행되고, 다시 랜더링이 시작되겠지. 그러면, 다시 컴포넌트를 실행하면서 useEffect를 다시 실행하게 된다. 이때, dependency list를 앞에서 기억한 값과 비교한다. 현재는 빈배열 줬으니깐, **모든 값이 같다.** 이렇게 판단하는 것. 
+
+즉, useEffect는 전체 랜더링 끝나면 콜백 딱 실행해준다. 그 뒤로는 dependency list를 비교하면서 한다. 그러고, 기억했던 값이랑 다른 경우에만 콜백을 실행한다. 그러면, 실제로 dependency list에 요소를 추가해 보자. 
+
+**이런 경우는 잘 보면, order가 달라질때는, 다시 component 실행한다는 뜻.** 
+
+```jsx
+useEffect(
+    () => {
+      handleLoad();
+    },
+    [order]
+  );
+
+```
+
+![useEffect](./images/useEffect.png)
+
+그러면, 잘 보면 적어도 order가 변할때는 계속 다시 리퀘스트를 보내고 있는 것. 
+
+아래는 **전체 코드**. 
+
+```jsx
+import { useEffect, useState } from "react";
+import { getReviews } from "../api";
+import ReviewList from "./ReviewList";
+
+function App() {
+  const [items, setItems] = useState([]);
+  const [order, setOrder] = useState("createdAt");
+
+  // const sortedItems = items.sort((a, b) => b[order] - a[order]);
+
+  const handleNewestClick = () => setOrder("createdAt");
+  const handleBestClick = () => setOrder("rating");
+
+  const handleDelete = id => {
+    const nextItems = items.filter(item => item.id !== id);
+    setItems(nextItems);
+  };
+
+  const handleLoad = async orderQuery => {
+    const { reviews } = await getReviews(orderQuery);
+    setItems(reviews);
+  };
+
+  useEffect(
+    () => {
+      handleLoad(order);
+    },
+    [order]
+  );
+
+  return (
+    <div>
+      <button onClick={handleNewestClick}>최신순</button>
+      <button onClick={handleBestClick}>베스트순</button>
+
+      <ReviewList items={items} onDelete={handleDelete} />
+    </div>
+  );
+}
+
+export default App;
+
+```
+
+
+
+앞에서 `useEffect` 를 사용해서 초기 데이터를 불러오고 정렬을 바꿀 때마다 데이터를 불러와봤습니다.
+
+이번 노트에선 우리가 사용한 `useEffect` 함수를 간단하게 정리해봅시다.
+
+# 처음 한 번만 실행하기
+
+```tsx
+useEffect(() => {
+  // 실행할 코드
+}, []);
+```
+
+컴포넌트가 처음 렌더링 되고 나면 리액트가 콜백 함수를 기억해뒀다가 실행합니다.
+
+그 이후로는 콜백 함수를 실행하지 않습니다.
+
+# 값이 바뀔 때마다 실행하기
+
+```tsx
+useEffect(() => {
+  // 실행할 코드
+}, [dep1, dep2, dep3, ...]);
+```
+
+컴포넌트가 처음 렌더링 되고 나면 리액트가 콜백 함수를 기억해뒀다가 실행합니다.
+
+그 이후로 렌더링 할 때는 디펜던시 리스트에 있는 값들을 확인해서
+
+하나라도 바뀌면  콜백 함수를 기억해뒀다가 실행합니다.
+
+# 실험으로 확인해보기
+
+아래 코드는  `useEffect` 함수의 동작을 간단한 실험을 해볼 수 있는 코드입니다.
+
+디펜던시 리스트에  `[]` , `[first]`, `[first, second]` 를 넣어보면서
+
+콘솔 출력이 어떻게 달라지는지 확인해보세요!
+
+```tsx
+import { useEffect, useState } from 'react';
+
+function App() {
+  const [first, setFirst] = useState(1);
+  const [second, setSecond] = useState(1);
+
+  const handleFirstClick = () => setFirst(first + 1);
+
+  const handleSecondClick = () => setSecond(second + 1);
+
+  useEffect(() => {
+    console.log('렌더링 이후', first, second);
+  }, []);
+
+  console.log('렌더링', first, second);
+
+  return (
+    <div>
+      <h1>
+        {first}, {second}
+      </h1>
+      <button onClick={handleFirstClick}>First</button>
+      <button onClick={handleSecondClick}>Second</button>
+    </div>
+  );
+}
+
+export default App;
+```
+
+
+
+
+
+# 페이지네이션
+
+랜더링한테 필요한 데이터만 받아서 스크롤 내리거나 페이지 눌러야 가져온다. 이렇게 데이터를 나눠서 가져오는 것을 **페이지네이션** 이라고 한다. 페이지네이션에는 두 가지가 있다. 
+
+![pagination ](./images/pagination .png)
+
+offset 은 지금까지 받아온 데이터를 의미. 
+
+![pagination ](./images/pagination2.png)
+
+![pagination ](./images/pagination3.png)
+
+offset기준에서는 갯수를 기준으로 데이터를 나눈다. offset기반으로 20번까지 데이터를 받아왔으면, 21번부터 30번을 받아오게 되는 것. 
+
+![pagination ](./images/pagination4.png)
+
+그런데, 글을 보는 도중에 새로운 글이 추가되면? 21번부터 30번을 받아와야 되는데, 앞에 하나가 추가되서 20번부터 29번을 받아오게 되었다. 
+
+![pagination ](./images/pagination5.png)
+
+삭제되면 삭제된대로 내가 원했던 데이터와 달라진다. 
+
+![pagination ](./images/pagination6.png)
+
+이런 문제 때문에 커서 기반 페이지네이션이 있음. 
+
+![pagination ](./images/pagination7.png)
+
+서버로 리퀘스트 보내면, 리스폰스로 데이터랑 페이지네이션 정보를 준다. 
+
+![pagination ](./images/pagination8.png)
+
+![pagination ](./images/pagination9.png)
+
+**페이지네이션 정보를 보면, 다음 커서 값도 넘겨준다.**
+
+그러면, 다음 리퀘스트 때 커서 정보를 같이 보내주면서 커서 데이터 이후 10개 보내줘가 된다. 
+
+ ![pagination ](./images/pagination10.png)
+
+커서 데이터가 있으면, 중복이나 이런 문제가 사라진다. 
+
+그런데, 커서 기반이 서버 입장에서는 만들기 까다롭고, 데이터 자주 바뀌는게 아니라면 `offset`기반도 충분하다. 
+
+**fetch 예시**
+
+`https://learn.codeit.kr/9131/film-reviews?offset=0&limit=6`
+
+처음 데이터 6개를 가져온다. 
+
+그 다음은?
+
+`https://learn.codeit.kr/9131/film-reviews?offset=6&limit=6`
+
+response를 잘 보면, 총 데이터 갯수(`count`)와 다음 데이터가 있는지(`hasNext`)도 말해준다. 
+
+```js
+![pagination ](./images/pagination10.png
+```
+
+![pagination ](./images/pagination11.png)
+
+
+
+수정사항
+
+```jsx
+import { useEffect, useState } from "react";
+import { getReviews } from "../api";
+import ReviewList from "./ReviewList";
+
+const LIMIT = 6;
+
+function App() {
+  const [items, setItems] = useState([]);
+  const [order, setOrder] = useState("createdAt");
+  const [offset, setOffset] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+
+  // const sortedItems = items.sort((a, b) => b[order] - a[order]);
+
+  const handleNewestClick = () => setOrder("createdAt");
+  const handleBestClick = () => setOrder("rating");
+
+  const handleDelete = id => {
+    const nextItems = items.filter(item => item.id !== id);
+    setItems(nextItems);
+  };
+
+  const handleLoad = async options => {
+    const { reviews, paging } = await getReviews(options);
+    if (options.offset === 0) {
+      setItems(reviews);
+    } else {
+      setItems([...items, ...reviews]);
+    }
+    setOffset(options.offset + reviews.length);
+    setHasNext(paging.hasNext);
+  };
+
+  const handleLoadMore = async () => {
+    handleLoad({ order, offset, LIMIT });
+  };
+
+  useEffect(
+    () => {
+      handleLoad({ order, offset: 0, limit: LIMIT });
+    },
+    [order]
+  );
+
+  return (
+    <div>
+      <button onClick={handleNewestClick}>최신순</button>
+      <button onClick={handleBestClick}>베스트순</button>
+      <ReviewList items={items} onDelete={handleDelete} />
+      <button disabled={!hasNext} onClick={handleLoadMore}>
+        더보기
+      </button>
+    </div>
+  );
+}
+
+export default App;
+
+```
+
+더 불러올 데이터가 없으면, disalbed로 만들었다. 
+
+**이거 그냥 더 불러올 데이터가 없으면 안보이게 만들어 버리자.  이렇게 하면 된다. 참고로, hasNext가 false면 그대로 false를 리턴하고 끝나게되는건데 리액트에서 false면 랜더링 하지 않는다.** 
+
+```js
+{
+        hasNext && 
+        <button onClick={handleLoadMore}>더보기</button>
+      }
+```
+
+
+
+
+
+**조건부렌더링**
+
+앞에서 논리 연산자 `&&` 을 사용해서 간단한 조건부 렌더링을 해봤는데요.
+
+이번 레슨에선 리액트에서 활용할 수 있는 조건부 렌더링에 대한 꿀팁을 알려드릴게요!
+
+# 논리 연산자 활용하기
+
+## AND 연산자
+
+```tsx
+import { useState } from 'react';
+
+function App() {
+  const [show, setShow] = useState(false);
+
+  const handleClick = () => setShow(!show);
+
+  return (
+    <div>
+      <button onClick={handleClick}>토글</button>
+      {show && <p>보인다 👀</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+`show` 값이 `true` 이면 렌더링 하고, `false` 이면 렌더링 하지 않습니다.
+
+## OR 연산자
+
+```tsx
+import { useState } from 'react';
+
+function App() {
+  const [hide, setHide] = useState(true);
+
+  const handleClick = () => setHide(!hide);
+
+  return (
+    <div>
+      <button onClick={handleClick}>토글</button>
+      {hide || <p>보인다 👀</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+`hide` 값이 `true` 이면 렌더링 하지 않고, `false` 이면 렌더링 합니다.
+
+# 삼항 연산자 활용하기
+
+```tsx
+import { useState } from 'react';
+
+function App() {
+  const [toggle, setToggle] = useState(false);
+
+  const handleClick = () => setToggle(!toggle);
+
+  return (
+    <div>
+      <button onClick={handleClick}>토글</button>
+      {toggle ? <p>✅</p> : <p>❎</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+삼항 연산자를 사용하면 참, 거짓일 경우에 다르게 렌더링해줄 수 있습니다.
+
+`toggle` 의 값이 참일 경우엔 '✅'을, 거짓일 경우에는 '❎'를 렌더링합니다.
+
+# 렌더링되지 않는 값들
+
+```tsx
+function App() {
+  const nullValue = null;
+  const undefinedValue = undefined;
+  const trueValue = true;
+  const falseValue = false;
+  const emptyString = '';
+  const emptyArray = [];
+
+  return (
+    <div>
+      <p>{nullValue}</p>
+      <p>{undefinedValue}</p>
+      <p>{trueValue}</p>
+      <p>{falseValue}</p>
+      <p>{emptyString}</p>
+      <p>{emptyArray}</p>
+    </div>
+  );
+}
+
+export default App;
+```
+
+위 컴포넌트에서 중괄호 안에 있는 값들은 모두 아무것도 렌더링하지 않습니다.
+
+```tsx
+function App() {
+  const zero = 0;
+  const one = 1;
+
+  return (
+    <div>
+      <p>{zero}</p>
+      <p>{one}</p>
+    </div>
+  );
+}
+
+export default App;
+```
+
+반면에 이 값들은 각각 숫자 0과 1을 렌더링 합니다.
+
+# 조건부 렌더링을 사용할 때 주의할 점
+
+만약 아래와 같은 코드를 사용하면 어떤 문제가 있을까요?
+
+```tsx
+import { useState } from 'react';
+
+function App() {
+  const [num, setNum] = useState(0);
+
+  const handleClick = () => setNum(num + 1);
+
+  return (
+    <div>
+      <button onClick={handleClick}>더하기</button>
+      {num && <p>num이 0 보다 크다!</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+`num` 값이 0일 때는 `false` 로 계산되니까 뒤의 값을 계산하지 않기 때문에
+
+아무것도 렌더링 하지 않는 코드 같습니다.
+
+하지만 앞에서 살펴봤듯이 숫자 0은 0으로 렌더링 되는데요.
+
+그래서 처음 실행했을 때 **숫자 0이 렌더링** 되고
+
+'더하기' 버튼을 눌러서 `num` 값이 증가하면 `num이 0 보다 크다!` 가 렌더링 됩니다.
+
+그래서 이런 경우엔 아래처럼 보다 명확한 논리식을 써주는 게 안전합니다.
+
+**`true` 나 `false` 값은 리액트에서 렌더링 하지 않기 때문이죠!**
+
+```tsx
+import { useState } from 'react';
+
+function App() {
+  const [num, setNum] = useState(0);
+
+  const handleClick = () => setNum(num + 1);
+
+  return (
+    <div>
+      <button onClick={handleClick}>더하기</button>
+      {(num > 0) && <p>num이 0 보다 크다!</p>}
+    </div>
+  );
+}
+
+export default App;
+```
+
+편하게 코드를 작성하다 보면 굉장히 자주 하는 실수니까 함께 알아두시면 좋을 겁니다!
+
+
+
+
+
+# 비동기 state 만들 때 주의할 점
+
+이거 지금 버그가 있다. 
+
+> 속도 3g로 해놓고서, 데이터 추가 로드 한다음에 위에서 맨 마지막꺼 삭제 버튼 누르면?
+>
+> 갑자기 아래 데이터 추가로드가 다 된다음에 위에 삭제했던게 다시 생긴다. 
+
+이거 왜 그런지 생각해보자. 우리는 `handleLoadMore`를 클릭했고, 이건 아래처럼, handleLoad를 실행한다. 
+
+```jsx
+  const handleLoadMore = async () => {
+    handleLoad({ order, offset, LIMIT });
+  };
+```
+
+그러면 얘는 `handleLoad`를 실행한다. 
+
+```jsx
+const handleLoad = async options => {
+    const { reviews, paging } = await getReviews(options);
+    if (options.offset === 0) {
+      setItems(reviews);
+    } else {
+      setItems([...items, ...reviews]);
+    }
+    setOffset(options.offset + reviews.length);
+    setHasNext(paging.hasNext);
+  };
+
+```
+
+이 당시 딱, items가 있어. 그러고 여기서는 `getReviews`라는 비동기 함수를 실행한다. 그리고 네트워크를 보내는 동안 다른 작업이 실행된다. 그런데 우리가 이때 삭제 버튼을 누른 것. 
+
+그러면, `handleDelete`가 실행된다. 그러면 여기서는 아이템을 하나 없애지. `items` state를 변경했음. 
+
+```jsx
+  const handleDelete = id => {
+    const nextItems = items.filter(item => item.id !== id);
+    setItems(nextItems);
+  };
+
+```
+
+그러면, 이제 `getReviews`의 `response`가 도착했음. 이제 state를 변경하려고 하지 아랫줄에서. 이때 `items` state는 어떤 값일까? 
+
+```jsx
+setItems([...items, ...reviews])
+```
+
+문제는 이 함수 내에서 `items` 는 아까 삭제 되기 전의 items야. 그 상태에서 setItems를 다시 해버리니깐, 지웠던 데이터가 다시 되살아놔 버려지는 것. 이럴 때는 어떻게 하지?
+
+```jsx
+setItems((prevItems) => [...items, ...reviews]);
+```
+
+이렇게 해놓으면, 현재 시점에서의 state값을 받아와서 해준다. 이것 또한 규칙이다. 
+
+
+
+
+
+# useState 뽀개기 
+
+앞에서 비동기로 `useState` 를 사용할 때 주의할 점을 배웠는데요. 그때 Setter 함수의 또 다른 사용법을 배웠죠?
+
+이번 레슨에서는 초깃값을 지정하는 또 다른 방법에 대해서 소개하고, 여태까지 배운 `useState` 사용법을 총정리해보도록 하겠습니다.
+
+# 초깃값 지정하기
+
+```tsx
+const [state, setState] = useState(initialState);
+```
+
+`useState` 함수에 값을 전달하면 초깃값으로 지정할 수 있었습니다.
+
+## 콜백으로 초깃값 지정하기
+
+```tsx
+const [state, setState] = useState(() => {
+  // 초기값을 계산
+  return initialState;
+});
+```
+
+이 방법은 여기서 처음 소개하는 내용인데요, 초깃값을 계산해서 넣는 경우 이렇게 콜백을 사용하면 좋습니다.
+
+무슨 말인지 예시 코드로 한번 살펴볼게요.
+
+```jsx
+function ReviewForm() {
+  const savedValues = getSavedValues(); // ReviewForm을 렌더링할 때마다 실행됨
+  const [values, setValues] = useState(savedValues);
+  // ...
+}
+```
+
+`getSavedValues` 라는 함수를 통해서 컴퓨터에 저장된 초깃값을 가져온다고 해봅시다.
+
+이 코드엔 한 가지 문제점이 있는데요. `savedValues` 라는 값은 처음 렌더링 한 번만 계산하면 되는데, 매 렌더링 때마다 불필요하게 `getSavedValues` 함수를 실행해서 저장된 값을 가져온다는 거죠.
+
+```jsx
+function ReviewForm() {
+  const [values, setValues] = useState(() => {
+    const savedValues = getSavedValues(); // 처음 렌더링할 때만 실행됨
+    return savedValues
+  });
+  // ...
+}
+```
+
+이럴 때는 이렇게 콜백 형태로 초깃값을 지정해주면 처음 렌더링 할 때 한 번만 콜백을 실행해서 초깃값을 만들고, 그 이후로는 콜백을 실행하지 않기 때문에 `getSavedValues` 를 불필요하게 실행하지 않습니다.
+
+단, 이때 주의할 점은 이 콜백 함수가 리턴할 때까지 리액트가 렌더링하지 않고 기다린다는 점인데요. 콜백 함수의 실행이 오래 걸릴 수록 초기 렌더링이 늦어진다는 점에 주의하세요.
+
+# Setter 함수 사용하기
+
+## 기본
+
+```tsx
+const [state, setState] = useState(0);
+
+const handleAddClick = () => {
+  setState(state + 1);
+}
+```
+
+Setter 함수에다가 값을 전달하면, 해당하는 값으로 변경되었죠? 이때 주의할 점이 있었는데요, 배열이나 객체 같은 참조형은 반드시 새로운 값을 만들어서 전달해야 한다는 거였습니다.
+
+**참조형 State 사용의 잘못된 예**
+
+```tsx
+const [state, setState] = useState({ count: 0 });
+
+const handleAddClick = () => {
+  state.count += 1; // 참조형 변수의 프로퍼티를 수정
+  setState(state); // 참조형이기 때문에 변수의 값(레퍼런스)는 변하지 않음
+}
+```
+
+**참조형 State 사용의 올바른 예**
+
+```tsx
+const [state, setState] = useState({ count: 0 });
+
+const handleAddClick = () => {
+  setState({ ...state, count: state.count + 1 }); // 새로운 객체 생성
+}
+```
+
+## 콜백으로 State 변경
+
+```jsx
+setState((prevState) => {
+  // 다음 State 값을 계산
+  return nextState;
+});
+```
+
+만약 이전 State 값을 참조하면서 State를 변경하는 경우, 비동기 함수에서 State를 변경하게 되면 최신 값이 아닌 State 값을 참조하는 문제가 있었습니다. 이럴 때는 콜백을 사용해서 처리할 수 있었는데요. 파라미터로 올바른 State 값을 가져와서 사용할 수 있습니다. 이전 State 값으로 새로운 State를 만드는 경우엔 항상 콜백 형태를 사용하는 습관을 들이면 좋겠죠?
+
+**콜백으로 State를 변경하는 예시**
+
+```tsx
+const [count, setCount] = useState(0);
+
+const handleAddClick = async () => {
+  await addCount();
+  setCount((prevCount) => prevCount + 1);
+}
+```
+
+
+
+
+
+# 네트워크 로딩 처리하기
+
+Slow 3g를 해놓고서, 지금 보면 더 보기를 눌러놓고, 이거 처리하는거 기다리는 동안 계속 더 보기를 누른거야. 이러니깐, 불필요하게 동일한 요청 계속 보내고, 심지어 동일한 데이터가 계속 추가되어 있다. 
+
+![pagination ](./images/network_loading.png)
+
+이런거 막으려면, 더 보기 눌러야 된다. 
+
+간단하다, `isLoading` 이라는 state 추가. 기본값 `false`로
+
+```jsx
+const [isLoading, setIsLoading] = useState(false);
+```
+
+ 그 다음에, try catch넣어놓고, getReview하는 동안 `Loading`을 true로 바꿔놓는 것. 
+
+```jsx
+const handleLoad = async options => {
+    let result;
+    try {
+      setIsLoading(true);
+      result = await getReviews(options);
+    } catch (error) {
+      console.log(error);
+      return;
+    } finally {
+      setIsLoading(false);
+    }
+    
+    const { reviews, paging } = result;
+  
+```
+
+그리고, 로딩 되는 동안 비활성화 해주면 끝. 
+
+```jsx
+<button disabled={isLoading} onClick={handleLoadMore}>
+```
+
+
+
+# 네트워크 에러 처리하기 
+
+근데 리퀘스트 자체가 실패할 수도 있잖아. 아니면,  error response가 돌아올 수도 있잖아. 
+
+그래서 에러 처리가 필요하다. 
+
+이것도 간단하다
+
+```jsx
+  const [loadingError, setLoadingError] = useState(null);
+```
+
+```jsx
+try {
+      setIsLoading(true);
+      setLoadingError(null);
+
+      result = await getReviews(options);
+    } catch (error) {
+
+      setLoadingError(error);
+      return;
+
+    } finally {
+      setIsLoading(false);
+    }
+```
+
+그 다음 `html`에서
+
+?. 는 optional chaning이라고 부른다. 에러 객체가 있을 때에만, message에 접근하는 것. 
+
+```jsx
+{loadingError?.message && <span>{loadingError.message}</span>}
+```
+
