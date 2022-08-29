@@ -1205,3 +1205,31 @@ try {
 {loadingError?.message && <span>{loadingError.message}</span>}
 ```
 
+
+
+# 입력폼 만들기 
+
+```jsx
+function ReviewForm() {
+  const [title, setTitle] = useState("");
+
+  const handleTitleChange = e => {
+    setTitle(e.target.value);
+  };
+  return (
+    <form>
+      <input value={title} onChange={handleTitleChange} />
+    </form>
+  );
+}
+
+export default ReviewForm;
+
+```
+
+그런데 잠깐. 
+
+html에서는 사용자가 Input을 입력할 때 마다, `onInput`이라는 이벤트가 발생했음. `onChange`는 사용자의 input입력이 끝났을 때, 발생하는 이벤트 였음. 
+
+react에서의 `onChange`는 순수 자바스크립트에서의 `onChange`와 서로 다르게 동작한다. `onInput`처럼 사용자가 값을 입력할 때 마다, `onChange`가 발생한다. 리액트 만든 개발자들이 이 이름이 더 직관적이여서 이렇게 만들었다고 함. 
+
