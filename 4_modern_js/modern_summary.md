@@ -2434,7 +2434,36 @@ printCatName(user2); // 함께 지내는 고양이가 없습니다.
     const {[propertyName]: product, ...price} = macbook;
     ```
 
+    추가사항 
     
+    ```
+    {
+      "foods": [...],
+      "paging": {
+        "count": 42,
+        "nextCursor": "Y3JlYXRlZEF0LDIz"
+      }
+    }
+    ```
+    
+    ```jsx
+    const handleLoad = async (options) => {
+      const {
+        foods,
+        paging: { nextCursor },
+      } = await getFoods(options);
+      if (!options.cursor) {
+        setItems(foods);
+      } else {
+        setItems((prevItems) => [...prevItems, ...foods]);
+      }
+      setCursor(nextCursor);
+    };
+    ```
+    
+    
+
+- 
 
 - **함수와 Destructuring**
 

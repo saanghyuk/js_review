@@ -1233,3 +1233,354 @@ html에서는 사용자가 Input을 입력할 때 마다, `onInput`이라는 이
 
 react에서의 `onChange`는 순수 자바스크립트에서의 `onChange`와 서로 다르게 동작한다. `onInput`처럼 사용자가 값을 입력할 때 마다, `onChange`가 발생한다. 리액트 만든 개발자들이 이 이름이 더 직관적이여서 이렇게 만들었다고 함. 
 
+
+
+# 제어 컴포넌트
+
+인풋의 value값을 리액트에서 지정하는 방식. 
+
+예를 들어, 
+
+```jsx
+function MyComponent(){
+	const handleChange = e => {
+	const nextValue = e.target.value.toUpperCase();
+	setValue(nextValue)
+	};
+  
+  return <input value={value} onChange={handleChange}>
+}
+
+```
+
+이렇게 하면, 인풋에 내가 무슨 값을 쳐도 계속 대문자가 나온다. 왜냐면, 지금 컴포넌트의 value에 내가 친 글자를 대문자로 바꿔서 value로 내려주기 때문. 이렇게 인풋의 값을 제어할 수 있다는 것. 
+
+
+
+제어하지 않는 컴포넌트는 비제어 컴포넌트라고 한다. 예를 들어, 아래와 같이 하면, value값을 받아서 state로 저장하긴 하지만, 컴포넌트의 value로 사용하지는 않고 있다. 
+
+```jsx
+function MyComponent(){
+	const handleChange = e => {
+	const nextValue = e.target.value;
+	setValue(nextValue)
+	};
+  
+  return <input onChange={handleChange}>
+}
+```
+
+![controlled](./images/controlled.png)
+
+
+
+앞에서 스테이트를 사용해서 입력 폼을 다루는 간단한 방법과
+
+제어 컴포넌트, 비제어 컴포넌트에 대해서 배웠는데요.
+
+이번 레슨에선 여행 검색을 예시로 보면서 배운 내용을 정리해봅시다!
+
+# HTML과 다른 점
+
+## onChange
+
+리액트에선 순수 HTML과 다르게
+
+**`onChange` Prop을 사용하면 입력 값이 바뀔 때마다 핸들러 함수를 실행**합니다.
+
+`oninput` 이벤트와 같다고 생각하시면 되는데요.
+
+리액트 개발자들은 주로 `onChange` 라는 Prop을 사용하니까, 이 내용은 꼭 기억해주세요.
+
+## htmlFor
+
+앞에서 잠깐 배운 내용이지만,
+
+`<label />` 태그에서 사용하는 속성인 `for` 는 자바스크립트 반복문 키워드인 `for` 와 겹치기 때문에
+
+리액트에서는 `htmlFor` 를 사용합니다.
+
+# 폼을 다루는 기본적인 방법
+
+스테이트를 만들고 `target.value` 값을 사용해서 값을 변경해 줄 수 있었습니다.
+
+이때 `value` Prop으로 스테이트 값을 내려주고, `onChange` Prop으로 핸들러 함수를 넘겨줬는데요.
+
+```jsx
+function TripSearchForm() {
+  const [location, setLocation] = useState('Seoul');
+  const [checkIn, setCheckIn] = useState('2022-01-01');
+  const [checkOut, setCheckOut] = useState('2022-01-02');
+
+  const handleLocationChange = (e) => setLocation(e.target.value);
+
+  const handleCheckInChange = (e) => setCheckIn(e.target.value);
+
+  const handleCheckOutChange = (e) => setCheckOut(e.target.value);
+    
+  return (
+    <form>
+      <h1>검색 시작하기</h1>
+      <label htmlFor="location">위치</label>
+      <input id="location" name="location" value={location} placeholder="어디로 여행가세요?"
+        onChange={handleLocationChange} />
+      <label htmlFor="checkIn">체크인</label>
+      <input id="checkIn" type="date" name="checkIn" value={checkIn} onChange={handleCheckInChange} />
+      <label htmlFor="checkOut">체크아웃</label>
+      <input id="checkOut" type="date" name="checkOut" value={checkOut} onChange={handleCheckOutChange} />
+      <button type="submit">검색</button>
+    </form>
+  )
+}
+```
+
+# 폼 값을 객체 하나로 처리하기
+
+이벤트 객체의 `target.name` 과 `target.value` 값을 사용해서 값을 변경해 줄 수도 있었습니다.
+
+이렇게하면 객체형 스테이트 하나만 가지고도 값을 처리할 수 있었죠.
+
+```jsx
+function TripSearchForm() {
+  const [values, setValues] = useState({
+    location: 'Seoul',
+    checkIn: '2022-01-01',
+    checkOut: '2022-01-02',
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  }
+    
+  return (
+    <form>
+      <h1>검색 시작하기</h1>
+      <label htmlFor="location">위치</label>
+      <input id="location" name="location" value={values.location} placeholder="어디로 여행가세요?" onChange={handleChange} />
+      <label htmlFor="checkIn">체크인</label>
+      <input id="checkIn" type="date" name="checkIn" value={values.checkIn} onChange={handleChange} />
+      <label htmlFor="checkOut">체크아웃</label>
+      <input id="checkOut" type="date" name="checkOut" value={values.checkOut} onChange={handleChange} />
+      <button type="submit">검색</button>
+    </form>
+  )
+}
+```
+
+# 기본 submit 동작 막기
+
+HTML 폼의 기본 동작은 `submit` 타입의 버튼을 눌렀을 때 페이지를 이동하는 건데요.
+
+이벤트 객체의 `preventDefault` 를 사용하면 이 동작을 막을 수 있었습니다.
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  // ...
+}
+```
+
+# 제어 컴포넌트
+
+인풋 태그의 `value` 속성을 지정하고 사용하는 컴포넌트입니다.
+
+리액트에서 인풋의 값을 제어하는 경우로 리액트에서 지정한 값과 실제 인풋 `value` 의 값이 항상 같습니다.
+
+이렇게 하면 값을 예측하기가 쉽고 인풋에 쓰는 값을 여러 군데서 쉽게 바꿀 수 있다는 장점이 있어서 리액트에서 권장하는 방법인데요.
+
+이때 State냐 Prop이냐는 중요하지 않고, 리액트로 `value` 를 지정한다는 것이 핵심입니다.
+
+아래 두 경우 모두 제어 컴포넌트입니다.
+
+## 예시 1
+
+```jsx
+function TripSearchForm() {
+  const [values, setValues] = useState({
+    location: 'Seoul',
+    checkIn: '2022-01-01',
+    checkOut: '2022-01-02',
+  })
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
+  }
+    
+  return (
+    <form>
+      <h1>검색 시작하기</h1>
+      <label htmlFor="location">위치</label>
+      <input id="location" name="location" value={values.location} placeholder="어디로 여행가세요?" onChange={handleChange} />
+      <label htmlFor="checkIn">체크인</label>
+      <input id="checkIn" type="date" name="checkIn" value={values.checkIn} onChange={handleChange} />
+      <label htmlFor="checkOut">체크아웃</label>
+      <input id="checkOut" type="date" name="checkOut" value={values.checkOut} onChange={handleChange} />
+      <button type="submit">검색</button>
+    </form>
+  )
+}
+```
+
+## 예시 2
+
+```jsx
+function TripSearchForm({ values, onChange }) {
+  return (
+    <form>
+      <h1>검색 시작하기</h1>
+      <label htmlFor="location">위치</label>
+      <input id="location" name="location" value={values.location} placeholder="어디로 여행가세요?" onChange={onChange} />
+      <label htmlFor="checkIn">체크인</label>
+      <input id="checkIn" type="date" name="checkIn" value={values.checkIn} onChange={onChange} />
+      <label htmlFor="checkOut">체크아웃</label>
+      <input id="checkOut" type="date" name="checkOut" value={values.checkOut} onChange={onChange} />
+      <button type="submit">검색</button>
+    </form>
+  )
+}
+```
+
+# 비제어 컴포넌트
+
+인풋 태그의 `value` 속성을 리액트에서 지정하지 않고 사용하는 컴포넌트입니다.
+
+```jsx
+function TripSearchForm({ onSubmit }) {
+  return (
+    <form onSubmit={onSubmit} >
+      <h1>검색 시작하기</h1>
+      <label htmlFor="location">위치</label>
+      <input id="location" name="location" placeholder="어디로 여행가세요?" />
+      <label htmlFor="checkIn">체크인</label>
+      <input id="checkIn" type="date" name="checkIn" />
+      <label htmlFor="checkOut">체크아웃</label>
+      <input id="checkOut" type="date" name="checkOut" />
+      <button type="submit">검색</button>
+    </form>
+  )
+}
+```
+
+참고로 위처럼 작성해도 `onSubmit` 함수에서는 폼 태그를 참조할 수 있는데요.
+
+값들을 참조하려면 이벤트 객체의 `target` 활용해서 이렇게 할 수도 있고,
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const location = form['location'].value;
+  const checkIn = form['checkIn'].value;
+  const checkOut = form['checkOut'].value;
+  // ....
+}
+```
+
+폼 태그로 곧바로 `FormValue` 를 바로 만드는 것도 가능합니다.
+
+```jsx
+const handleSubmit = (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const formValue = new FormValue(form);
+  // ...
+}
+```
+
+만약 이렇게 제어 컴포넌트랑 비제어 컴포넌트 모두 쓸 수 있는 경우라면
+
+**제어 컴포넌트를 사용하는 걸 추천드립니다!**
+
+하지만 반드시 비제어 컴포넌트로 만들어야만 하는 경우가 있는데요, 대표적으로 파일을 선택하는 인풋이 그렇습니다.
+
+이 내용은 뒤에서 직접 만들면서 자세히 살펴볼게요.
+
+
+
+
+
+### ref prop
+
+원하는 시점에 실제 DOM노드에 접근하고 싶을 때 사용하는 Prop. 
+
+앞에서 DOM 노드를 참조할 때 `useRef` 함수로 Ref 객체를 만들고
+
+이것의 `current` 라는 프로퍼티를 활용했었는데요.
+
+이번 노트에서는 배운 내용을 사용법 위주로 정리해보겠습니다.
+
+# Ref 객체 생성
+
+```jsx
+import { useRef } from 'react';
+
+// ...
+
+const ref = useRef();
+```
+
+`useRef` 함수로 Ref 객체를 만들 수 있었습니다.
+
+# `ref` Prop 사용하기
+
+```jsx
+const ref = useRef();
+
+// ...
+
+<div ref={ref}> ... </div>
+```
+
+`ref` Prop에다가 앞에서 만든 Ref 객체를 내려주면 됩니다.
+
+# Ref 객체에서 DOM 노드 참조하기
+
+```jsx
+const node = ref.current;
+if (node) {
+  // node 를 사용하는 코드
+}
+```
+
+Ref 객체의 `current` 라는 프로퍼티를 사용하면 DOM 노드를 참조할 수 있었습니다.
+
+`current` 값은 없을 수도 있으니까 반드시 값이 존재하는지 검사하고 사용해야 하는 점도 잊지 마세요!
+
+# 예시: 이미지 크기 구하기
+
+다음 코드는 `img` 노드의 크기를 `ref` 를 활용해서 출력하는 예시입니다.
+
+`img` 노드에는 너비 값인 `width` 와 높이 값인 `height` 라는 속성이 있는데요.
+
+Ref 객체의 `current` 로 DOM 노드를 참조해서 두 속성 값을 가져왔습니다.
+
+```jsx
+import { useRef } from 'react';
+
+function Image({ src }) {
+  const imgRef = useRef();
+
+  const handleSizeClick = () => {
+    const imgNode = imgRef.current;
+    if (!imgNode) return;
+
+    const { width, height } = imgNode;
+    console.log(`${width} x ${height}`);
+  };
+
+  return (
+    <div>
+      <img src={src} ref={imgRef} alt="크기를 구할 이미지" />
+      <button onClick={handleSizeClick}>크기 구하기</button>
+    </div>
+  );
+}
+```
