@@ -1,29 +1,24 @@
 import { useState } from "react";
 import FileInput from "./Fileinput";
+import RatingInput from "./RatingInput";
 
-function ReviewForm() {
-  // const [title, setTitle] = useState("");
-  // const [rating, setRating] = useState(0);
-  // const [content, setContent] = useState("");
-  const [values, setValues] = useState({
-    title: "",
-    rating: 0,
-    content: "",
-    imgFile: null
-  });
 
-  // const handleTitleChange = e => {
-  //   setTitle(e.target.value);
-  // };
+const INITIAL_VALUES = {
+  title: "",
+  rating: 0,
+  content: "",
+  imgFile: null
+};
 
-  // const handleRatingChange = e => {
-  //   const nextRating = Number(e.target.value) || 0;
-  //   setRating(nextRating);
-  // };
-
-  // const handleContentChange = e => {
-  //   setContent(e.target.value);
-  // };
+function ReviewForm({ 
+      initialValues=INITIAL_VALUES,
+      onSubmitSuccess,
+      onSubmit,
+      onCancel,
+      initialPreview }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingError, setSubmittingError] = useState(null);
+  const [values, setValues] = useState(initialValues);
 
   const handleChange = (name, value) => {
     setValues(prevValues => ({
@@ -37,9 +32,31 @@ function ReviewForm() {
     handleChange(name, value);
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault(); // 이걸 안하면, 기본적으로 get을 실행해버림.
-    console.log(values);
+    const formData = new FormData();
+    formData.append("title", values.title);
+    formData.append("rating", values.rating);
+    formData.append("content", values.content);
+    formData.append("imgFile", values.imgFile);
+
+    let result; 
+
+    try {
+      setSubmittingError(null);
+      setIsSubmitting(true);
+      result = await onSubmit(formData);
+    }   catch (error) {
+      setSubmittingError(error);
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+    // review에는 새로 입력한 리뷰가 저장되어 있음. 
+    const { review } = result;
+    setValues(INITIAL_VALUES);
+    // 새로 생성한 리뷰 정보 여기다가 넘겨주는 것. 
+    onSubmitSuccess(review);
   };
 
   return (
@@ -48,20 +65,22 @@ function ReviewForm() {
         name="imgFile"
         value={values.imgFile}
         onChange={handleChange}
+        initialPreview={initialPreview}
       />
       <input name="title" value={values.title} onChange={handleInputChange} />
-      <input
+      <RatingInput
         name="rating"
-        type="number"
         value={values.rating}
-        onChange={handleInputChange}
+        onChange={handleChange}
       />
       <textarea
         name="content"
         value={values.content}
         onChange={handleInputChange}
       />
-      <button>확인</button>
+      {onCancel && <button onClick={onCancel}>취소</button>}
+      <button disabled={isSubmitting}>확인</button>
+      {submittingError?.message && <div>{submittingError.message}</div>}
     </form>
   );
 }

@@ -3,8 +3,9 @@ import { getReviews } from "../api";
 import ReviewForm from "./ReviewForm";
 import ReviewList from "./ReviewList";
 import './ReviewForm.css'
+import { createReview, updateReview } from "../api";
 
-const LIMIT = 6;
+const LIMIT = 10;
 
 function App() {
   const [items, setItems] = useState([]);
@@ -54,6 +55,20 @@ function App() {
     handleLoad({ order, offset, LIMIT });
   };
 
+  const handleCreateSuccess = (review) => {
+    setItems((prevItems) => [review, ...prevItems]);
+  }
+
+  const handleUpdateSuccess = (review) => {
+    setItems((prevItems) => {
+    const splitIdx =  prevItems.findIndex((item)=> item.id===review.id);
+    return [
+      ...prevItems.slice(0, splitIdx), 
+      review, 
+      ...prevItems.slice(splitIdx + 1)
+    ]
+  })
+}
   useEffect(
     () => {
       handleLoad({ order, offset: 0, limit: LIMIT });
@@ -67,8 +82,8 @@ function App() {
         <button onClick={handleNewestClick}>최신순</button>
         <button onClick={handleBestClick}>베스트순</button>
       </div>
-      <ReviewForm></ReviewForm>
-      <ReviewList items={items} onDelete={handleDelete} />
+      <ReviewForm onSubmit = {createReview} onSubmitSuccess = {handleCreateSuccess} ></ReviewForm>
+      <ReviewList items={items} onUpdate = {updateReview} onUpdateSuccess = {handleUpdateSuccess} onDelete={handleDelete} />
       {hasNext &&
         <button disabled={isLoading} onClick={handleLoadMore}>
           더보기
